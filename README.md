@@ -1,109 +1,143 @@
-<a href="https://demo-nextjs-with-supabase.vercel.app/">
-  <img alt="Next.js and Supabase Starter Kit - the fastest way to build apps with Next.js and Supabase" src="https://demo-nextjs-with-supabase.vercel.app/opengraph-image.png">
-  <h1 align="center">Next.js and Supabase Starter Kit</h1>
-</a>
+# HRIS Bharata Dashboard
 
-<p align="center">
- The fastest way to build apps with Next.js and Supabase
-</p>
+Human Resource Information System - Bharata Group
 
-<p align="center">
-  <a href="#features"><strong>Features</strong></a> ·
-  <a href="#demo"><strong>Demo</strong></a> ·
-  <a href="#deploy-to-vercel"><strong>Deploy to Vercel</strong></a> ·
-  <a href="#clone-and-run-locally"><strong>Clone and run locally</strong></a> ·
-  <a href="#feedback-and-issues"><strong>Feedback and issues</strong></a>
-  <a href="#more-supabase-examples"><strong>More Examples</strong></a>
-</p>
-<br/>
+## 🚀 Tech Stack
 
-## Features
+- **Framework:** Next.js 15 (App Router)
+- **Language:** TypeScript
+- **Styling:** Tailwind CSS
+- **UI Components:** Shadcn/ui
+- **Database:** Supabase (PostgreSQL)
+- **Authentication:** Supabase Auth
+- **State Management:** React Hooks
+- **Form Handling:** React Hook Form
+- **Icons:** Lucide React
+- **Notifications:** React Hot Toast
+- **Loading:** React Loading Skeleton
 
-- Works across the entire [Next.js](https://nextjs.org) stack
-  - App Router
-  - Pages Router
-  - Middleware
-  - Client
-  - Server
-  - It just works!
-- supabase-ssr. A package to configure Supabase Auth to use cookies
-- Password-based authentication block installed via the [Supabase UI Library](https://supabase.com/ui/docs/nextjs/password-based-auth)
-- Styling with [Tailwind CSS](https://tailwindcss.com)
-- Components with [shadcn/ui](https://ui.shadcn.com/)
-- Optional deployment with [Supabase Vercel Integration and Vercel deploy](#deploy-your-own)
-  - Environment variables automatically assigned to Vercel project
+## 📁 Project Structure
 
-## Demo
+```
+hris-bharata-dashboard/
+├── app/                      # Next.js App Router
+│   ├── auth/                # Authentication pages
+│   ├── dashboard/           # Main dashboard pages
+│   │   ├── employees/       # Employee management
+│   │   ├── companies/       # Company master data
+│   │   ├── departments/     # Department master data
+│   │   ├── positions/       # Position master data
+│   │   ├── position-levels/ # Position level master data
+│   │   ├── roles/           # Role master data
+│   │   └── work-shifts/     # Work shift master data
+│   └── layout.tsx           # Root layout
+├── components/              # React components
+│   ├── ui/                  # Shadcn/ui components
+│   ├── employees/           # Employee components
+│   ├── master-data/         # Master data components
+│   ├── layout/              # Layout components
+│   ├── providers/           # Context providers
+│   └── schedules/           # Schedule components
+├── lib/                     # Utilities and libraries
+│   ├── actions/             # Server actions
+│   ├── supabase/            # Supabase client
+│   └── utils/               # Utility functions
+├── docs/                    # Documentation
+│   └── *.md                 # Feature guides
+└── migrations/              # Database migrations
 
-You can view a fully working demo at [demo-nextjs-with-supabase.vercel.app](https://demo-nextjs-with-supabase.vercel.app/).
+```
 
-## Deploy to Vercel
+## 📚 Documentation
 
-Vercel deployment will guide you through creating a Supabase account and project.
+All feature documentation is available in the [`docs/`](./docs/) folder.
 
-After installation of the Supabase integration, all relevant environment variables will be assigned to the project so the deployment is fully functioning.
+📖 **[View Complete Documentation Index →](./docs/INDEX.md)**
 
-[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fvercel%2Fnext.js%2Ftree%2Fcanary%2Fexamples%2Fwith-supabase&project-name=nextjs-with-supabase&repository-name=nextjs-with-supabase&demo-title=nextjs-with-supabase&demo-description=This+starter+configures+Supabase+Auth+to+use+cookies%2C+making+the+user%27s+session+available+throughout+the+entire+Next.js+app+-+Client+Components%2C+Server+Components%2C+Route+Handlers%2C+Server+Actions+and+Middleware.&demo-url=https%3A%2F%2Fdemo-nextjs-with-supabase.vercel.app%2F&external-id=https%3A%2F%2Fgithub.com%2Fvercel%2Fnext.js%2Ftree%2Fcanary%2Fexamples%2Fwith-supabase&demo-image=https%3A%2F%2Fdemo-nextjs-with-supabase.vercel.app%2Fopengraph-image.png)
+### Quick Links
 
-The above will also clone the Starter kit to your GitHub, you can clone that locally and develop locally.
+#### Core Features
 
-If you wish to just develop locally and not deploy to Vercel, [follow the steps below](#clone-and-run-locally).
+- [Employee Management](./docs/EMPLOYEE_FEATURE_GUIDE.md)
+- [Employee Detail & Edit](./docs/EMPLOYEE_DETAIL_EDIT_FEATURE.md)
+- [Employee Education](./docs/EMPLOYEE_EDUCATION_FEATURE.md)
+- [Role Management](./docs/ROLE_FEATURE_GUIDE.md)
+- [Shift Schedule](./docs/SHIFT_SCHEDULE_IMPLEMENTATION.md)
 
-## Clone and run locally
+#### Technical Implementation
 
-1. You'll first need a Supabase project which can be made [via the Supabase dashboard](https://database.new)
+- [Currency Input](./docs/CURRENCY_INPUT_IMPLEMENTATION.md)
+- [Date Picker](./docs/DATE_TIME_PICKER_IMPLEMENTATION.md)
+- [Toast Notifications](./docs/TOAST_IMPLEMENTATION.md)
+- [Loading Skeleton](./docs/SKELETON_LOADING_GUIDE.md)
 
-2. Create a Next.js app using the Supabase Starter template npx command
+#### Database & Schema
 
-   ```bash
-   npx create-next-app --example with-supabase with-supabase-app
-   ```
+- [Schema Documentation](./docs/hris_schema_documentation.md)
+- [Feature Flows](./docs/hris_full_feature_flows.md)
 
-   ```bash
-   yarn create next-app --example with-supabase with-supabase-app
-   ```
+## 🛠️ Installation
 
-   ```bash
-   pnpm create next-app --example with-supabase with-supabase-app
-   ```
+```bash
+# Install dependencies
+npm install
 
-3. Use `cd` to change into the app's directory
+# Set up environment variables
+cp .env.example .env.local
 
-   ```bash
-   cd with-supabase-app
-   ```
+# Run development server
+npm run dev
+```
 
-4. Rename `.env.example` to `.env.local` and update the following:
+## 🔑 Environment Variables
 
-  ```env
-  NEXT_PUBLIC_SUPABASE_URL=[INSERT SUPABASE PROJECT URL]
-  NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=[INSERT SUPABASE PROJECT API PUBLISHABLE OR ANON KEY]
-  ```
-  > [!NOTE]
-  > This example uses `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`, which refers to Supabase's new **publishable** key format.
-  > Both legacy **anon** keys and new **publishable** keys can be used with this variable name during the transition period. Supabase's dashboard may show `NEXT_PUBLIC_SUPABASE_ANON_KEY`; its value can be used in this example.
-  > See the [full announcement](https://github.com/orgs/supabase/discussions/29260) for more information.
+Create a `.env.local` file with:
 
-  Both `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` can be found in [your Supabase project's API settings](https://supabase.com/dashboard/project/_?showConnect=true)
+```env
+NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your_anon_key
+SUPABASE_SERVICE_ROLE_KEY=your_service_role_key
+```
 
-5. You can now run the Next.js local development server:
+## 🚀 Getting Started
 
-   ```bash
-   npm run dev
-   ```
+1. Install dependencies
+2. Set up Supabase project
+3. Run migrations in `migrations/` folder
+4. Configure environment variables
+5. Run `npm run dev`
+6. Open [http://localhost:3000](http://localhost:3000)
 
-   The starter kit should now be running on [localhost:3000](http://localhost:3000/).
+## 📦 Key Features
 
-6. This template comes with the default shadcn/ui style initialized. If you instead want other ui.shadcn styles, delete `components.json` and [re-install shadcn/ui](https://ui.shadcn.com/docs/installation/next)
+✅ Employee Management (CRUD with soft delete)
+✅ Multi-step employee form with validation
+✅ Employee education history
+✅ Master data management (Companies, Departments, Positions, etc)
+✅ User authentication & authorization
+✅ Role-based access control
+✅ Work shift scheduling
+✅ Dark mode support
+✅ Toast notifications
+✅ Skeleton loading states
+✅ Responsive design
+✅ TypeScript type safety
 
-> Check out [the docs for Local Development](https://supabase.com/docs/guides/getting-started/local-development) to also run Supabase locally.
+## 🎨 UI Components
 
-## Feedback and issues
+Built with [Shadcn/ui](https://ui.shadcn.com/):
 
-Please file feedback and issues over on the [Supabase GitHub org](https://github.com/supabase/supabase/issues/new/choose).
+- Button, Input, Select, Checkbox
+- Dialog, Alert Dialog, Toast
+- Calendar, Date Picker
+- Table, Card, Badge
+- Skeleton Loading
+- And more...
 
-## More Supabase examples
+## 📝 License
 
-- [Next.js Subscription Payments Starter](https://github.com/vercel/nextjs-subscription-payments)
-- [Cookie-based Auth and the Next.js 13 App Router (free course)](https://youtube.com/playlist?list=PL5S4mPUpp4OtMhpnp93EFSo42iQ40XjbF)
-- [Supabase Auth and the Next.js App Router](https://github.com/supabase/supabase/tree/master/examples/auth/nextjs)
+Private - Bharata Group
+
+## 👥 Team
+
+HRIS Development Team - Bharata Group
