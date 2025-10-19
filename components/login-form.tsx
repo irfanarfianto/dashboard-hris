@@ -38,8 +38,9 @@ export function LoginForm({
         password,
       });
       if (error) throw error;
-      // Update this route to redirect to an authenticated route. The user already has an active session.
-      router.push("/protected");
+      // Redirect ke dashboard setelah login berhasil
+      router.push("/dashboard");
+      router.refresh();
     } catch (error: unknown) {
       setError(error instanceof Error ? error.message : "An error occurred");
     } finally {
@@ -49,11 +50,28 @@ export function LoginForm({
 
   return (
     <div className={cn("flex flex-col gap-6", className)} {...props}>
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-2xl">Login</CardTitle>
-          <CardDescription>
-            Enter your email below to login to your account
+      <Card className="shadow-2xl border-teal-100 dark:border-teal-900/50">
+        <CardHeader className="text-center">
+          <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-gradient-to-br from-teal-500 to-lime-500 shadow-lg">
+            <svg
+              className="h-7 w-7 text-white"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M12 11c0 3.517-1.009 6.799-2.753 9.571m-3.44-2.04l.054-.09A13.916 13.916 0 008 11a4 4 0 118 0c0 1.017-.07 2.019-.203 3m-2.118 6.844A21.88 21.88 0 0015.171 17m3.839 1.132c.645-2.266.99-4.659.99-7.132A8 8 0 008 4.07M3 15.364c.64-1.319 1-2.8 1-4.364 0-1.457.39-2.823 1.07-4"
+              />
+            </svg>
+          </div>
+          <CardTitle className="text-3xl font-bold bg-gradient-to-r from-teal-600 to-lime-600 bg-clip-text text-transparent dark:from-teal-400 dark:to-lime-400">
+            HRIS Bharata
+          </CardTitle>
+          <CardDescription className="text-gray-600 dark:text-gray-400">
+            Masukkan email dan password untuk login
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -64,10 +82,11 @@ export function LoginForm({
                 <Input
                   id="email"
                   type="email"
-                  placeholder="m@example.com"
+                  placeholder="admin@bharata.com"
                   required
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
+                  className="border-gray-300 dark:border-gray-700 focus:border-teal-500 focus:ring-teal-500"
                 />
               </div>
               <div className="grid gap-2">
@@ -75,9 +94,9 @@ export function LoginForm({
                   <Label htmlFor="password">Password</Label>
                   <Link
                     href="/auth/forgot-password"
-                    className="ml-auto inline-block text-sm underline-offset-4 hover:underline"
+                    className="ml-auto inline-block text-sm text-teal-600 dark:text-teal-400 underline-offset-4 hover:underline"
                   >
-                    Forgot your password?
+                    Lupa password?
                   </Link>
                 </div>
                 <Input
@@ -86,25 +105,41 @@ export function LoginForm({
                   required
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
+                  className="border-gray-300 dark:border-gray-700 focus:border-teal-500 focus:ring-teal-500"
                 />
               </div>
-              {error && <p className="text-sm text-red-500">{error}</p>}
-              <Button type="submit" className="w-full" disabled={isLoading}>
-                {isLoading ? "Logging in..." : "Login"}
+              {error && (
+                <div className="rounded-lg bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 p-3">
+                  <p className="text-sm text-red-600 dark:text-red-400">
+                    {error}
+                  </p>
+                </div>
+              )}
+              <Button
+                type="submit"
+                className="w-full bg-gradient-to-r from-teal-500 to-teal-600 hover:from-teal-600 hover:to-teal-700 text-white shadow-lg shadow-teal-500/30"
+                disabled={isLoading}
+              >
+                {isLoading ? "Memproses..." : "Masuk"}
               </Button>
             </div>
-            <div className="mt-4 text-center text-sm">
-              Don&apos;t have an account?{" "}
+            <div className="mt-4 text-center text-sm text-gray-600 dark:text-gray-400">
+              Belum punya akun?{" "}
               <Link
                 href="/auth/sign-up"
-                className="underline underline-offset-4"
+                className="font-medium text-teal-600 dark:text-teal-400 underline underline-offset-4 hover:text-teal-700 dark:hover:text-teal-300"
               >
-                Sign up
+                Daftar sekarang
               </Link>
             </div>
           </form>
         </CardContent>
       </Card>
+
+      {/* Footer Info */}
+      <div className="text-center text-sm text-gray-600 dark:text-gray-400">
+        <p>© 2025 Bharata Group. All rights reserved.</p>
+      </div>
     </div>
   );
 }
