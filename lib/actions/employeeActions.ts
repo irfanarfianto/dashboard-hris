@@ -322,6 +322,13 @@ export async function createEmployeeWithUser(data: {
 
     revalidatePath("/dashboard/employees");
 
+    // Debug: Log password yang akan di-return
+    if (data.create_user_account && tempPassword) {
+      console.log("🔐 Temp Password (plain text):", tempPassword);
+      console.log("📧 Email:", data.email);
+      console.log("👤 Username:", data.username);
+    }
+
     return {
       success: true,
       message:

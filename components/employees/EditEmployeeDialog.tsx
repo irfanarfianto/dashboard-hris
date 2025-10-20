@@ -58,7 +58,7 @@ interface EditEmployeeDialogProps {
       domicile_address: string;
       npwp_number?: string;
     }>;
-    employee_education?: EducationData[];
+    employee_educations?: EducationData[];
     users?: Array<{
       username: string;
       role_id: number;
@@ -196,8 +196,8 @@ export default function EditEmployeeDialog({
       }
 
       // Set education
-      if (employee.employee_education) {
-        setEducationList(employee.employee_education);
+      if (employee.employee_educations) {
+        setEducationList(employee.employee_educations);
       }
     }
   }, [employee, isOpen]);

@@ -40,50 +40,104 @@ Dokumentasi lengkap untuk HRIS Bharata Dashboard.
    - Role-based access control (RBAC)
 
 7. **[Shift Schedule](./SHIFT_SCHEDULE_IMPLEMENTATION.md)**
+
    - Work shift management
    - Schedule assignment untuk karyawan
+
+8. **[Location Actions](./LOCATION_ACTIONS_GUIDE.md)**
+
+   - Server actions untuk manajemen lokasi & WiFi
+   - Geofencing untuk attendance system
+   - GPS & mac_address validation
+
+9. **[Location & WiFi Management](./LOCATION_FEATURE_IMPLEMENTATION.md)**
+
+   - Complete location management UI
+   - WiFi network registration
+   - CRUD operations dengan validation
+   - Expandable table dengan WiFi list
+
+10. **[Location-Company Integration](./LOCATION_COMPANY_INTEGRATION.md)**
+
+    - Multi-tenant location management
+    - Company_id relationship implementation
+    - Schema migration guide
+    - Auto-company selection
+
+11. **[Location Schema Design - No Address](./LOCATION_NO_ADDRESS_FIELD.md)**
+
+    - Why locations table doesn't need address field
+    - Data normalization and consistency
+    - Access address via companies join
+
+12. **[Leaflet Map Integration](./LEAFLET_MAP_INTEGRATION.md)**
+
+    - Interactive map untuk location selection
+    - Drag & drop marker placement
+    - Geofencing circle visualization
+    - Current location detection
+
+13. **[Geolocation Troubleshooting](./GEOLOCATION_TROUBLESHOOTING.md)**
+    - Fix "User denied Geolocation" errors
+    - HTTPS requirements
+    - Browser permission settings guide
+    - System location services setup
+    - Error code reference
+
+---
+
+### 🎨 UI/UX Components
+
+9. **[Sidebar Navigation](./SIDEBAR_RESTRUCTURE.md)**
+
+   - Sidebar restructure dengan grouping
+   - Menu organization & hierarchy
+   - Placeholder pages untuk fitur yang akan datang
+
+10. **[Skeleton Loading](./SKELETON_LOADING_GUIDE.md)**
+
+    - Loading states dengan react-loading-skeleton
+    - Dark mode support
+    - TableSkeleton, DetailSkeleton, DashboardSkeleton
+
+11. **[Toast Implementation](./TOAST_IMPLEMENTATION.md)**
+
+    - Toast notifications dengan Sonner
+    - Success, error, dan loading states
+
+12. **[Delete Confirmation Dialog](./EMPLOYEE_FEATURE_GUIDE.md#delete-confirmation)**
+    - Reusable DeleteConfirmDialog component
+    - Consistent delete UX
 
 ---
 
 ### 🛠️ Technical Implementation
 
-8. **[Currency Input](./CURRENCY_INPUT_IMPLEMENTATION.md)**
+13. **[Currency Input](./CURRENCY_INPUT_IMPLEMENTATION.md)**
 
-   - Format Rupiah dengan separator
-   - Real-time formatting
-   - Utility functions
+- Format Rupiah dengan separator
+- Real-time formatting
+- Utility functions
 
-9. **[Currency Utils Guide](./CURRENCY_UTILS_GUIDE.md)**
+14. **[Currency Utils Guide](./CURRENCY_UTILS_GUIDE.md)**
 
-   - Panduan lengkap currency utilities
-   - formatRupiah, parseRupiah functions
+- Panduan lengkap currency utilities
+- formatRupiah, parseRupiah functions
 
-10. **[Currency Quick Reference](./CURRENCY_QUICK_REFERENCE.md)**
+15. **[Currency Quick Reference](./CURRENCY_QUICK_REFERENCE.md)**
 
     - Quick reference untuk currency functions
 
-11. **[Currency Input Demo](./CURRENCY_INPUT_DEMO.md)**
+16. **[Currency Input Demo](./CURRENCY_INPUT_DEMO.md)**
 
     - Demo dan contoh penggunaan
 
-12. **[Date Time Picker](./DATE_TIME_PICKER_IMPLEMENTATION.md)**
+17. **[Date Time Picker](./DATE_TIME_PICKER_IMPLEMENTATION.md)**
 
     - Date picker dengan auto-close
     - Controlled state implementation
 
-13. **[Toast Notifications](./TOAST_IMPLEMENTATION.md)**
-
-    - React Hot Toast integration
-    - Success, error, loading states
-    - Custom styling
-
-14. **[Loading Skeleton](./SKELETON_LOADING_GUIDE.md)**
-
-    - react-loading-skeleton implementation
-    - TableSkeleton, DetailSkeleton, DashboardSkeleton
-    - Dark mode support
-
-15. **[Loading Component Guide](./LOADING_COMPONENT_GUIDE.md)**
+18. **[Loading Component Guide](./LOADING_COMPONENT_GUIDE.md)**
     - Loading states & components
     - Skeleton loading patterns
 
@@ -91,37 +145,37 @@ Dokumentasi lengkap untuk HRIS Bharata Dashboard.
 
 ### 🐛 Fixes & Refactoring
 
-16. **[Authentication Fix](./AUTH_FIX_SERVICE_ROLE.md)**
+19. **[Authentication Fix](./AUTH_FIX_SERVICE_ROLE.md)**
 
     - Service Role Key untuk admin operations
     - Fix "User not allowed" error
 
-17. **[Password Hash Fix](./PASSWORD_HASH_FIX.md)**
+20. **[Password Hash Fix](./PASSWORD_HASH_FIX.md)**
 
     - Bcrypt password hashing
     - Fix password_hash NOT NULL constraint
 
-18. **[Date Picker Fix](./DATE_PICKER_FIX.md)**
+21. **[Date Picker Fix](./DATE_PICKER_FIX.md)**
 
     - Fix calendar auto-close issue
     - Controlled Popover state
 
-19. **[Dropdown Upgrade Guide](./DROPDOWN_UPGRADE_GUIDE.md)**
+22. **[Dropdown Upgrade Guide](./DROPDOWN_UPGRADE_GUIDE.md)**
 
     - Upgrade dari custom dropdown ke Shadcn Select
     - Migration guide
 
-20. **[Status Removal Refactoring](./REFACTORING_STATUS_REMOVAL.md)**
+23. **[Status Removal Refactoring](./REFACTORING_STATUS_REMOVAL.md)**
 
     - Remove employee status column
     - Soft delete implementation
 
-21. **[Add Employee Dialog Refactoring](./REFACTORING_ADD_EMPLOYEE_DIALOG.md)**
+24. **[Add Employee Dialog Refactoring](./REFACTORING_ADD_EMPLOYEE_DIALOG.md)**
 
     - Refactoring add employee dialog
     - Code improvement
 
-22. **[Hire Date Update](./UPDATE_HIRE_DATE_MOVED.md)**
+25. **[Hire Date Update](./UPDATE_HIRE_DATE_MOVED.md)**
     - Move hire date field
     - Form structure update
 
@@ -129,19 +183,26 @@ Dokumentasi lengkap untuk HRIS Bharata Dashboard.
 
 ### 📊 Database & Schema
 
-23. **[HRIS Schema Documentation](./hris_schema_documentation.md)**
+23. **[Run Database Migration](./RUN_MIGRATION.md)** ⚠️ **IMPORTANT**
+
+    - Fix PGRST204 error (column 'mac_address' not found)
+    - Step-by-step migration guide
+    - Troubleshooting & verification
+    - Post-migration checklist
+
+24. **[HRIS Schema Documentation](./hris_schema_documentation.md)**
 
     - Complete database schema
     - Table relationships
     - Column definitions
 
-24. **[HRIS Feature Flows](./hris_full_feature_flows.md)**
+25. **[HRIS Feature Flows](./hris_full_feature_flows.md)**
 
     - Complete feature flow documentation
     - User journeys
     - Business logic
 
-25. **[Implementation Summary](./IMPLEMENTATION_SUMMARY.md)**
+26. **[Implementation Summary](./IMPLEMENTATION_SUMMARY.md)**
     - Overall implementation summary
     - Feature checklist
     - Technical stack
@@ -160,10 +221,17 @@ Dokumentasi lengkap untuk HRIS Bharata Dashboard.
 - [Employee Stepper](./EMPLOYEE_STEPPER_IMPLEMENTATION.md)
 - [Employee Verification](./EMPLOYEE_VERIFICATION_STEP.md)
 
-#### 💼 Master Data
+#### 💼 Master Data & System
 
 - [Role Management](./ROLE_FEATURE_GUIDE.md)
 - [Shift Schedule](./SHIFT_SCHEDULE_IMPLEMENTATION.md)
+- [Location Actions](./LOCATION_ACTIONS_GUIDE.md)
+- [Location & WiFi Management](./LOCATION_FEATURE_IMPLEMENTATION.md)
+- [Location-Company Integration](./LOCATION_COMPANY_INTEGRATION.md)
+- [Location Schema Design](./LOCATION_NO_ADDRESS_FIELD.md)
+- [Leaflet Map Integration](./LEAFLET_MAP_INTEGRATION.md)
+- [Geolocation Troubleshooting](./GEOLOCATION_TROUBLESHOOTING.md)
+- [Location Actions](./LOCATION_ACTIONS_GUIDE.md)
 
 #### 💰 Currency Features
 
@@ -174,6 +242,7 @@ Dokumentasi lengkap untuk HRIS Bharata Dashboard.
 
 #### 🎨 UI Components
 
+- [Sidebar Navigation](./SIDEBAR_RESTRUCTURE.md)
 - [Date Time Picker](./DATE_TIME_PICKER_IMPLEMENTATION.md)
 - [Toast Notifications](./TOAST_IMPLEMENTATION.md)
 - [Loading Skeleton](./SKELETON_LOADING_GUIDE.md)
@@ -209,6 +278,15 @@ Setiap dokumentasi mengikuti format:
 
 ## 🆕 Latest Updates
 
+- 🚨 **Run Migration Guide** - Petunjuk menjalankan database migration (fix PGRST204 error)
+- ✅ **Geolocation Troubleshooting** - Fix permission issues dengan comprehensive guide
+- ✅ **Leaflet Map Integration** - Interactive map untuk pilih koordinat lokasi dengan visual
+- ✅ **Location-Company Integration** - Multi-tenant location management dengan company_id
+- ✅ **Schema Migration** - Database migration untuk column alignment
+- ✅ **Location & WiFi Feature** - Complete UI implementation untuk geofencing
+- ✅ **Sidebar Restructure** - Logical grouping dengan submenu
+- ✅ **Placeholder Pages** - No more 404 errors untuk fitur dalam pengembangan
+- ✅ **Location Actions** - Server actions untuk geofencing
 - ✅ **Skeleton Loading** - Implemented react-loading-skeleton
 - ✅ **Delete Dialog** - Using DeleteConfirmDialog component
 - ✅ **Employee Detail** - Complete detail & edit pages

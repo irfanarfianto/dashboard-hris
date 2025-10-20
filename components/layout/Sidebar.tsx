@@ -14,7 +14,6 @@ import {
   MapPin,
   Building2,
   Bell,
-  Database,
   Briefcase,
   Timer,
   ChevronDown,
@@ -31,18 +30,18 @@ const navigationItems = [
     title: "Dashboard",
     href: "/dashboard",
     icon: LayoutDashboard,
+    description: "Ringkasan & Statistik",
   },
   {
-    title: "Karyawan",
-    href: "/dashboard/employees",
+    title: "Manajemen SDM",
     icon: Users,
-    description: "Manajemen Data Master & Akun",
-  },
-  {
-    title: "Data Master",
-    icon: Database,
-    description: "Master Data Perusahaan",
+    description: "Data Karyawan & Struktur Organisasi",
     submenu: [
+      {
+        title: "Karyawan",
+        href: "/dashboard/employees",
+        icon: Users,
+      },
       {
         title: "Perusahaan",
         href: "/dashboard/companies",
@@ -63,23 +62,29 @@ const navigationItems = [
         href: "/dashboard/positions",
         icon: Briefcase,
       },
+    ],
+  },
+  {
+    title: "Presensi & Shift",
+    icon: Clock,
+    description: "Manajemen Presensi & Jadwal Kerja",
+    submenu: [
+      {
+        title: "Presensi",
+        href: "/dashboard/attendance",
+        icon: Clock,
+      },
       {
         title: "Shift Kerja",
         href: "/dashboard/work-shifts",
         icon: Timer,
       },
       {
-        title: "Role & Akses",
-        href: "/dashboard/roles",
-        icon: Shield,
+        title: "Lokasi & WiFi",
+        href: "/dashboard/locations",
+        icon: MapPin,
       },
     ],
-  },
-  {
-    title: "Presensi",
-    href: "/dashboard/attendance",
-    icon: Clock,
-    description: "Presensi & Lokasi",
   },
   {
     title: "Cuti & Dinas",
@@ -94,28 +99,31 @@ const navigationItems = [
     description: "Payroll & Komponen Gaji",
   },
   {
-    title: "Lokasi",
-    href: "/dashboard/locations",
-    icon: MapPin,
-    description: "Manajemen Lokasi & WiFi",
-  },
-  {
-    title: "Notifikasi",
-    href: "/dashboard/notifications",
-    icon: Bell,
-    description: "Template & Log Notifikasi",
-  },
-  {
-    title: "Audit Log",
-    href: "/dashboard/audit",
-    icon: Shield,
-    description: "Log Aktivitas Sistem",
-  },
-  {
-    title: "Pengaturan",
-    href: "/dashboard/settings",
+    title: "Sistem",
     icon: Settings,
-    description: "Konfigurasi Sistem",
+    description: "Pengaturan & Keamanan Sistem",
+    submenu: [
+      {
+        title: "Role & Akses",
+        href: "/dashboard/roles",
+        icon: Shield,
+      },
+      {
+        title: "Notifikasi",
+        href: "/dashboard/notifications",
+        icon: Bell,
+      },
+      {
+        title: "Audit Log",
+        href: "/dashboard/audit",
+        icon: Shield,
+      },
+      {
+        title: "Pengaturan",
+        href: "/dashboard/settings",
+        icon: Settings,
+      },
+    ],
   },
 ];
 

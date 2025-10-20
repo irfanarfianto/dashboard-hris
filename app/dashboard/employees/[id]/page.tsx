@@ -11,29 +11,80 @@ interface EmployeeDetailPageProps {
 async function getEmployeeDetail(id: number) {
   const supabase = await createClient();
 
-  const { data: employee, error } = await supabase
-    .from("employees")
-    .select(
+  try {
+    // First, get basic employee data with simple relations
+    const { data: employee, error: employeeError } = await supabase
+      .from("employees")
+      .select(
+        `
+        *,
+        companies:company_id (id, name),
+        departments:department_id (id, name),
+        positions:position_id (id, name, level_id),
+        work_shifts:shift_id (id, name, start_time, end_time),
+        employee_personnel_details (*),
+        employee_educations (*)
       `
-      *,
-      companies:company_id (id, name),
-      departments:department_id (id, name),
-      positions:position_id (id, name, level_id, position_levels:level_id (id, name)),
-      work_shifts:shift_id (id, name, start_time, end_time),
-      employee_personnel_details (*),
-      employee_education (*),
-      users (id, username, is_active, roles:role_id (id, name))
-    `
-    )
-    .eq("id", id)
-    .is("deleted_at", null)
-    .single();
+      )
+      .eq("id", id)
+      .is("deleted_at", null)
+      .single();
 
-  if (error || !employee) {
+    if (employeeError) {
+      console.error("Error fetching employee:", employeeError);
+      return null;
+    }
+
+    if (!employee) {
+      console.log("Employee not found with ID:", id);
+      return null;
+    }
+
+    // Get position level if exists
+    if (employee.positions && employee.positions.level_id) {
+      const { data: positionLevel } = await supabase
+        .from("position_levels")
+        .select("id, name")
+        .eq("id", employee.positions.level_id)
+        .single();
+
+      if (positionLevel) {
+        employee.positions.position_levels = positionLevel;
+      }
+    }
+
+    // Get user data with role separately
+    const { data: userData } = await supabase
+      .from("users")
+      .select("id, username, is_active, role_id")
+      .eq("employee_id", id)
+      .single();
+
+    if (userData) {
+      // Get role name
+      const { data: roleData } = await supabase
+        .from("roles")
+        .select("id, name")
+        .eq("id", userData.role_id)
+        .single();
+
+      if (roleData) {
+        employee.users = [
+          {
+            ...userData,
+            roles: roleData,
+          },
+        ];
+      } else {
+        employee.users = [userData];
+      }
+    }
+
+    return employee;
+  } catch (error) {
+    console.error("Unexpected error in getEmployeeDetail:", error);
     return null;
   }
-
-  return employee;
 }
 
 export default async function EmployeeDetailPage({

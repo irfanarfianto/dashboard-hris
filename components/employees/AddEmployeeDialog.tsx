@@ -97,8 +97,17 @@ export default function AddEmployeeDialog({
           <div className="relative bg-white dark:bg-gray-900 rounded-lg shadow-2xl w-full max-w-5xl max-h-[90vh] overflow-hidden z-10 flex flex-col">
             {showSuccess ? (
               <SuccessScreen
+                fullName={formData.full_name}
+                department={
+                  departments.find(
+                    (d) => d.id === parseInt(formData.department_id)
+                  )?.name || "-"
+                }
+                position={
+                  positions.find((p) => p.id === parseInt(formData.position_id))
+                    ?.name || "-"
+                }
                 email={formData.email}
-                username={formData.username}
                 tempPassword={tempPassword}
                 copiedPassword={copiedPassword}
                 onCopyPassword={copyPassword}

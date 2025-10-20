@@ -63,7 +63,7 @@ interface EmployeeDetailViewProps {
       domicile_address: string;
       npwp_number?: string;
     }>;
-    employee_education?: EducationData[];
+    employee_educations?: EducationData[];
     users?: Array<{
       username: string;
       is_active: boolean;
@@ -363,10 +363,10 @@ export default function EmployeeDetailView({
               <GraduationCap className="h-5 w-5 text-purple-600" />
               Data Pendidikan
             </h2>
-            {employee.employee_education &&
-            employee.employee_education.length > 0 ? (
+            {employee.employee_educations &&
+            employee.employee_educations.length > 0 ? (
               <div className="space-y-3">
-                {employee.employee_education.map((edu, index) => (
+                {employee.employee_educations.map((edu, index) => (
                   <div
                     key={index}
                     className="p-4 bg-gray-50 dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700"

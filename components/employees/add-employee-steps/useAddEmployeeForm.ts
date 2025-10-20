@@ -217,6 +217,13 @@ export function useAddEmployeeForm() {
 
       if (result.success) {
         if (result.data?.tempPassword) {
+          // Debug: Log password yang diterima dari server
+          console.log("🔐 Received tempPassword:", result.data.tempPassword);
+          console.log(
+            "🔐 Is hashed?",
+            result.data.tempPassword.startsWith("$2")
+          );
+
           toast.success("Karyawan berhasil ditambahkan!");
           setTempPassword(result.data.tempPassword);
           setShowSuccess(true);

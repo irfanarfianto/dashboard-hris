@@ -13,36 +13,19 @@ import DeleteButton from "@/components/employees/DeleteButton";
 import AddEmployeeDialog from "@/components/employees/AddEmployeeDialog";
 
 // Type definition untuk employee data dari Supabase
-interface SupabaseEmployee {
-  id: number;
-  full_name: string;
-  email: string | null;
-  gender: string;
-  departments: Array<{ name: string }>;
-  positions: Array<{ name: string }>;
-}
-
-// Type definition untuk employee data yang sudah di-transform
 interface Employee {
   id: number;
   full_name: string;
   email: string | null;
   gender: string;
+  department_id: number;
+  position_id: number;
   departments: {
     name: string;
   } | null;
   positions: {
     name: string;
   } | null;
-}
-
-// Helper function untuk transform data dari Supabase
-function transformEmployeeData(data: SupabaseEmployee[]): Employee[] {
-  return data.map((employee) => ({
-    ...employee,
-    departments: employee.departments?.[0] || null,
-    positions: employee.positions?.[0] || null,
-  }));
 }
 
 export default async function EmployeesPage() {
@@ -57,10 +40,12 @@ export default async function EmployeesPage() {
       full_name,
       email,
       gender,
-      departments (
+      department_id,
+      position_id,
+      departments:department_id (
         name
       ),
-      positions (
+      positions:position_id (
         name
       )
     `
@@ -72,7 +57,7 @@ export default async function EmployeesPage() {
     console.error("Error fetching employees:", error);
   }
 
-  const employeeList = transformEmployeeData(employees || []);
+  const employeeList = (employees || []) as unknown as Employee[];
 
   return (
     <div className="space-y-6">
