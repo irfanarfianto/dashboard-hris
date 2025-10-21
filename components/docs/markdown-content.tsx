@@ -38,19 +38,35 @@ export function MarkdownContent({ content }: MarkdownContentProps) {
   const components = {
     h1: ({ children, ...props }: React.HTMLAttributes<HTMLHeadingElement>) => {
       const id = generateSlug(children?.toString() || "");
-      return <h1 id={id} {...props}>{children}</h1>;
+      return (
+        <h1 id={id} {...props}>
+          {children}
+        </h1>
+      );
     },
     h2: ({ children, ...props }: React.HTMLAttributes<HTMLHeadingElement>) => {
       const id = generateSlug(children?.toString() || "");
-      return <h2 id={id} {...props}>{children}</h2>;
+      return (
+        <h2 id={id} {...props}>
+          {children}
+        </h2>
+      );
     },
     h3: ({ children, ...props }: React.HTMLAttributes<HTMLHeadingElement>) => {
       const id = generateSlug(children?.toString() || "");
-      return <h3 id={id} {...props}>{children}</h3>;
+      return (
+        <h3 id={id} {...props}>
+          {children}
+        </h3>
+      );
     },
     h4: ({ children, ...props }: React.HTMLAttributes<HTMLHeadingElement>) => {
       const id = generateSlug(children?.toString() || "");
-      return <h4 id={id} {...props}>{children}</h4>;
+      return (
+        <h4 id={id} {...props}>
+          {children}
+        </h4>
+      );
     },
   };
 
