@@ -11,9 +11,9 @@
     --card-foreground: 0 0% 3.9%;
     --popover: 0 0% 100%;
     --popover-foreground: 0 0% 3.9%;
-    /* Primary - Teal dari logo */
-    --primary: 0 0% 9%;
-    --primary-foreground: 0 0% 98%;
+    /* Primary - Default Blue (will be overridden by theme color) */
+    --primary: 221.2 83.2% 53.3%;
+    --primary-foreground: 210 40% 98%;
     /* Secondary - Lime Green dari logo */
     --secondary: 0 0% 96.1%;
     --secondary-foreground: 0 0% 9%;
@@ -43,9 +43,9 @@
     --card-foreground: 0 0% 98%;
     --popover: 0 0% 3.9%;
     --popover-foreground: 0 0% 98%;
-    /* Primary - Brighter Teal untuk dark mode */
-    --primary: 0 0% 98%;
-    --primary-foreground: 0 0% 9%;
+    /* Primary - Default Blue Dark (will be overridden by theme color) */
+    --primary: 217.2 91.2% 59.8%;
+    --primary-foreground: 222.2 47.4% 11.2%;
     /* Secondary - Brighter Lime Green untuk dark mode */
     --secondary: 0 0% 14.9%;
     --secondary-foreground: 0 0% 98%;
@@ -77,56 +77,6 @@
   }
   body {
     @apply bg-background text-foreground;
-  }
-}
-
-/* Theme Color Override - Dynamic theme color support */
-@layer components {
-  /* Data attribute selector for theme-aware components */
-  [data-theme-color] .bg-primary,
-  [data-theme-color] button[class*="bg-primary"],
-  [data-theme-color] [class*="bg-primary"] {
-    background-color: hsl(var(--primary)) !important;
-  }
-
-  [data-theme-color] .text-primary {
-    color: hsl(var(--primary)) !important;
-  }
-
-  [data-theme-color] .text-primary-foreground,
-  [data-theme-color] button[class*="text-primary-foreground"] {
-    color: hsl(var(--primary-foreground)) !important;
-  }
-
-  [data-theme-color] .border-primary {
-    border-color: hsl(var(--primary)) !important;
-  }
-
-  /* Hover and focus states with theme */
-  [data-theme-color] .hover\:bg-primary\/90:hover,
-  [data-theme-color] button:hover[class*="bg-primary"] {
-    background-color: hsl(var(--primary) / 0.9) !important;
-  }
-
-  [data-theme-color] .hover\:text-primary:hover {
-    color: hsl(var(--primary)) !important;
-  }
-
-  /* Link variant */
-  [data-theme-color] [class*="text-primary"][class*="underline"] {
-    color: hsl(var(--primary)) !important;
-  }
-
-  /* Badge primary */
-  [data-theme-color] [class*="bg-primary"][class*="badge"],
-  [data-theme-color] .badge.bg-primary {
-    background-color: hsl(var(--primary)) !important;
-    color: hsl(var(--primary-foreground)) !important;
-  }
-
-  /* Progress bars and other elements using primary */
-  [data-theme-color] [style*="background-color"][class*="primary"] {
-    background-color: hsl(var(--primary)) !important;
   }
 }
 
