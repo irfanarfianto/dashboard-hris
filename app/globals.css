@@ -80,6 +80,56 @@
   }
 }
 
+/* Theme Color Override - Dynamic theme color support */
+@layer components {
+  /* Data attribute selector for theme-aware components */
+  [data-theme-color] .bg-primary,
+  [data-theme-color] button[class*="bg-primary"],
+  [data-theme-color] [class*="bg-primary"] {
+    background-color: hsl(var(--primary)) !important;
+  }
+
+  [data-theme-color] .text-primary {
+    color: hsl(var(--primary)) !important;
+  }
+
+  [data-theme-color] .text-primary-foreground,
+  [data-theme-color] button[class*="text-primary-foreground"] {
+    color: hsl(var(--primary-foreground)) !important;
+  }
+
+  [data-theme-color] .border-primary {
+    border-color: hsl(var(--primary)) !important;
+  }
+
+  /* Hover and focus states with theme */
+  [data-theme-color] .hover\:bg-primary\/90:hover,
+  [data-theme-color] button:hover[class*="bg-primary"] {
+    background-color: hsl(var(--primary) / 0.9) !important;
+  }
+
+  [data-theme-color] .hover\:text-primary:hover {
+    color: hsl(var(--primary)) !important;
+  }
+
+  /* Link variant */
+  [data-theme-color] [class*="text-primary"][class*="underline"] {
+    color: hsl(var(--primary)) !important;
+  }
+
+  /* Badge primary */
+  [data-theme-color] [class*="bg-primary"][class*="badge"],
+  [data-theme-color] .badge.bg-primary {
+    background-color: hsl(var(--primary)) !important;
+    color: hsl(var(--primary-foreground)) !important;
+  }
+
+  /* Progress bars and other elements using primary */
+  [data-theme-color] [style*="background-color"][class*="primary"] {
+    background-color: hsl(var(--primary)) !important;
+  }
+}
+
 /* React Day Picker Styles */
 .rdp {
   --rdp-cell-size: 2.25rem;

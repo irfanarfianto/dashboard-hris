@@ -2,6 +2,7 @@
 
 import { LogoutButton } from "@/components/logout-button";
 import { ThemeSwitcher } from "@/components/theme-switcher";
+import { ThemeColorSwitcher } from "@/components/theme-color-switcher";
 import { Bell, User, Settings, Menu } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -49,7 +50,10 @@ export default function DashboardHeader({
 
       {/* Right Section - Theme Switcher, Notifications & User Menu */}
       <div className="flex items-center gap-2">
-        {/* Theme Switcher */}
+        {/* Theme Color Switcher */}
+        <ThemeColorSwitcher />
+
+        {/* Theme Mode Switcher (Light/Dark) */}
         <ThemeSwitcher />
 
         {/* Notification Button */}

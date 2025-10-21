@@ -3,6 +3,7 @@ import { Geist } from "next/font/google";
 import { ThemeProvider } from "next-themes";
 import { Toaster } from "react-hot-toast";
 import { SkeletonThemeProvider } from "@/components/providers/skeleton-theme-provider";
+import { ThemeColorProvider } from "@/components/providers/theme-color-provider";
 import "./globals.css";
 
 const defaultUrl = process.env.VERCEL_URL
@@ -35,38 +36,40 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          <SkeletonThemeProvider>
-            <Toaster
-              position="top-right"
-              reverseOrder={false}
-              gutter={8}
-              toastOptions={{
-                // Default options
-                duration: 4000,
-                style: {
-                  background: "#363636",
-                  color: "#fff",
-                },
-                // Success
-                success: {
-                  duration: 3000,
-                  iconTheme: {
-                    primary: "#10b981",
-                    secondary: "#fff",
-                  },
-                },
-                // Error
-                error: {
+          <ThemeColorProvider>
+            <SkeletonThemeProvider>
+              <Toaster
+                position="top-right"
+                reverseOrder={false}
+                gutter={8}
+                toastOptions={{
+                  // Default options
                   duration: 4000,
-                  iconTheme: {
-                    primary: "#ef4444",
-                    secondary: "#fff",
+                  style: {
+                    background: "#363636",
+                    color: "#fff",
                   },
-                },
-              }}
-            />
-            {children}
-          </SkeletonThemeProvider>
+                  // Success
+                  success: {
+                    duration: 3000,
+                    iconTheme: {
+                      primary: "#10b981",
+                      secondary: "#fff",
+                    },
+                  },
+                  // Error
+                  error: {
+                    duration: 4000,
+                    iconTheme: {
+                      primary: "#ef4444",
+                      secondary: "#fff",
+                    },
+                  },
+                }}
+              />
+              {children}
+            </SkeletonThemeProvider>
+          </ThemeColorProvider>
         </ThemeProvider>
       </body>
     </html>
