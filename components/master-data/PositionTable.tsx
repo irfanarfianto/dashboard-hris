@@ -31,9 +31,15 @@ interface Position {
 
 interface PositionTableProps {
   data: Position[];
+  startIndex?: number;
+  onRefresh?: () => void;
 }
 
-export default function PositionTable({ data }: PositionTableProps) {
+export default function PositionTable({
+  data,
+  startIndex = 0,
+  onRefresh,
+}: PositionTableProps) {
   const [deletingId, setDeletingId] = useState<number | null>(null);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [selectedPosition, setSelectedPosition] = useState<Position | null>(
@@ -55,7 +61,11 @@ export default function PositionTable({ data }: PositionTableProps) {
     if (result.success) {
       setDeleteDialogOpen(false);
       setSelectedPosition(null);
-      router.refresh();
+      if (onRefresh) {
+        onRefresh();
+      } else {
+        router.refresh();
+      }
     } else {
       alert(result.error || "Gagal menghapus posisi");
     }
@@ -106,7 +116,7 @@ export default function PositionTable({ data }: PositionTableProps) {
                   className="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors"
                 >
                   <td className="px-4 py-3 text-sm text-gray-900 dark:text-gray-100">
-                    {index + 1}
+                    {startIndex + index + 1}
                   </td>
                   <td className="px-4 py-3 text-sm font-medium text-gray-900 dark:text-gray-100">
                     {position.name}
@@ -129,7 +139,11 @@ export default function PositionTable({ data }: PositionTableProps) {
                   </td>
                   <td className="px-4 py-3">
                     <div className="flex items-center justify-center gap-2">
-                      <PositionDialog mode="edit" data={position}>
+                      <PositionDialog
+                        mode="edit"
+                        data={position}
+                        onSuccess={onRefresh}
+                      >
                         <Button size="sm" variant="outline" className="h-8">
                           <Pencil className="h-3 w-3" />
                         </Button>
@@ -191,7 +205,11 @@ export default function PositionTable({ data }: PositionTableProps) {
               </div>
 
               <div className="flex gap-2 pt-2">
-                <PositionDialog mode="edit" data={position}>
+                <PositionDialog
+                  mode="edit"
+                  data={position}
+                  onSuccess={onRefresh}
+                >
                   <Button size="sm" variant="outline" className="flex-1">
                     <Pencil className="h-3 w-3 mr-2" />
                     Edit

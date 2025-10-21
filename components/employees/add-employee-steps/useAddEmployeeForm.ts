@@ -17,11 +17,12 @@ interface EducationData {
   graduation_year: string;
 }
 
-export function useAddEmployeeForm() {
+export function useAddEmployeeForm(onSuccess?: () => void) {
   const [isOpen, setIsOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
   const [tempPassword, setTempPassword] = useState("");
+  const [generatedUsername, setGeneratedUsername] = useState("");
   const [copiedPassword, setCopiedPassword] = useState(false);
   const [currentStep, setCurrentStep] = useState(1);
 
@@ -68,7 +69,6 @@ export function useAddEmployeeForm() {
     company_id: "",
     department_id: "",
     position_id: "",
-    shift_id: "",
     full_name: "",
     phone_number: "",
     email: "",
@@ -79,7 +79,6 @@ export function useAddEmployeeForm() {
     salary_base: "",
     contract_end_date: "",
     create_user_account: false,
-    username: "",
     role_id: "",
   });
 
@@ -186,7 +185,6 @@ export function useAddEmployeeForm() {
         company_id: parseInt(formData.company_id),
         department_id: parseInt(formData.department_id),
         position_id: parseInt(formData.position_id),
-        shift_id: parseInt(formData.shift_id),
         full_name: formData.full_name,
         phone_number: formData.phone_number,
         email: formData.email,
@@ -194,7 +192,6 @@ export function useAddEmployeeForm() {
         birth_date: formData.birth_date,
         hire_date: formData.hire_date,
         create_user_account: formData.create_user_account,
-        username: formData.create_user_account ? formData.username : undefined,
         role_id: formData.create_user_account
           ? parseInt(formData.role_id)
           : undefined,
@@ -217,8 +214,9 @@ export function useAddEmployeeForm() {
 
       if (result.success) {
         if (result.data?.tempPassword) {
-          // Debug: Log password yang diterima dari server
+          // Debug: Log password dan username yang diterima dari server
           console.log("🔐 Received tempPassword:", result.data.tempPassword);
+          console.log("👤 Received username:", result.data.username);
           console.log(
             "🔐 Is hashed?",
             result.data.tempPassword.startsWith("$2")
@@ -226,6 +224,7 @@ export function useAddEmployeeForm() {
 
           toast.success("Karyawan berhasil ditambahkan!");
           setTempPassword(result.data.tempPassword);
+          setGeneratedUsername(result.data.username || "");
           setShowSuccess(true);
         } else {
           toast.success("Karyawan berhasil ditambahkan!");
@@ -257,7 +256,6 @@ export function useAddEmployeeForm() {
       company_id: "",
       department_id: "",
       position_id: "",
-      shift_id: "",
       full_name: "",
       phone_number: "",
       email: "",
@@ -268,7 +266,6 @@ export function useAddEmployeeForm() {
       salary_base: "",
       contract_end_date: "",
       create_user_account: false,
-      username: "",
       role_id: "",
     });
     setPersonnelDetails({
@@ -286,6 +283,7 @@ export function useAddEmployeeForm() {
     setContractEndDate(undefined);
     setShowSuccess(false);
     setTempPassword("");
+    setGeneratedUsername("");
     setCopiedPassword(false);
     setEducationList([]);
     setShowEducationForm(false);
@@ -300,6 +298,9 @@ export function useAddEmployeeForm() {
   const handleClose = () => {
     setIsOpen(false);
     resetForm();
+    if (showSuccess && onSuccess) {
+      onSuccess();
+    }
   };
 
   const handleNext = () => {
@@ -321,7 +322,6 @@ export function useAddEmployeeForm() {
           formData.company_id &&
           formData.department_id &&
           formData.position_id &&
-          formData.shift_id &&
           formData.contract_type &&
           salaryNumeric > 0
         );
@@ -340,7 +340,7 @@ export function useAddEmployeeForm() {
         return true;
       case 4:
         if (formData.create_user_account) {
-          return formData.username && formData.role_id;
+          return formData.role_id !== "";
         }
         return true;
       case 5:
@@ -357,6 +357,7 @@ export function useAddEmployeeForm() {
     isSubmitting,
     showSuccess,
     tempPassword,
+    generatedUsername,
     copiedPassword,
     currentStep,
     salaryDisplay,

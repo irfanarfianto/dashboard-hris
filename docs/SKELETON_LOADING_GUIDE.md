@@ -100,7 +100,7 @@ All routes now have skeleton loading:
 | `app/dashboard/positions/loading.tsx`       | TableSkeleton          |
 | `app/dashboard/position-levels/loading.tsx` | TableSkeleton          |
 | `app/dashboard/roles/loading.tsx`           | TableSkeleton          |
-| `app/dashboard/work-shifts/loading.tsx`     | TableSkeleton          |
+| `app/dashboard/shifts/loading.tsx`          | TableSkeleton          |
 
 ---
 

@@ -1,6 +1,5 @@
 import { Shield } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
   Select,
@@ -13,7 +12,6 @@ import {
 interface Step4AkunUserProps {
   formData: {
     create_user_account: boolean;
-    username: string;
     role_id: string;
   };
   roles: Array<{ id: number; name: string; description?: string }>;
@@ -62,21 +60,7 @@ export default function Step4AkunUser({
 
         {/* User Account Fields */}
         {formData.create_user_account && (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 animate-in fade-in slide-in-from-top-2 duration-200">
-            <div>
-              <Label htmlFor="username">
-                Username <span className="text-red-500">*</span>
-              </Label>
-              <Input
-                id="username"
-                value={formData.username}
-                onChange={(e) => onFormDataChange("username", e.target.value)}
-                placeholder="username_karyawan"
-                className="mt-1"
-                required={formData.create_user_account}
-              />
-            </div>
-
+          <div className="space-y-4 animate-in fade-in slide-in-from-top-2 duration-200">
             <div>
               <Label htmlFor="role_id">
                 Role <span className="text-red-500">*</span>
@@ -92,23 +76,36 @@ export default function Step4AkunUser({
                 <SelectContent>
                   {roles.map((r) => (
                     <SelectItem key={r.id} value={r.id.toString()}>
-                      {r.name}
-                      {r.description && (
-                        <span className="text-xs text-gray-500 ml-2">
-                          - {r.description}
-                        </span>
-                      )}
+                      <div className="flex flex-col">
+                        <span className="font-medium">{r.name}</span>
+                        {r.description && (
+                          <span className="text-xs text-gray-500">
+                            {r.description}
+                          </span>
+                        )}
+                      </div>
                     </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
             </div>
 
-            <div className="md:col-span-2 p-3 bg-amber-50 dark:bg-amber-900/10 rounded-lg border border-amber-200 dark:border-amber-800">
-              <p className="text-xs text-amber-800 dark:text-amber-300">
-                ℹ️ Password sementara akan di-generate otomatis oleh sistem dan
-                ditampilkan setelah karyawan berhasil ditambahkan.
+            <div className="p-4 bg-blue-50 dark:bg-blue-900/10 rounded-lg border border-blue-200 dark:border-blue-800 space-y-2">
+              <p className="text-sm text-blue-800 dark:text-blue-300 font-medium">
+                ℹ️ Informasi Username & Password:
               </p>
+              <ul className="text-xs text-blue-700 dark:text-blue-400 space-y-1 list-disc list-inside">
+                <li>
+                  Username akan di-generate otomatis dari nama lengkap karyawan
+                </li>
+                <li>
+                  Password sementara akan di-generate otomatis oleh sistem
+                </li>
+                <li>
+                  Keduanya akan ditampilkan setelah karyawan berhasil
+                  ditambahkan
+                </li>
+              </ul>
             </div>
           </div>
         )}

@@ -56,12 +56,14 @@ interface PositionDialogProps {
   mode: "create" | "edit";
   data?: Position;
   children: React.ReactNode;
+  onSuccess?: () => void;
 }
 
 export default function PositionDialog({
   mode,
   data,
   children,
+  onSuccess,
 }: PositionDialogProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -125,7 +127,13 @@ export default function PositionDialog({
 
       if (result.success) {
         setIsOpen(false);
-        router.refresh();
+
+        if (onSuccess) {
+          onSuccess();
+        } else {
+          router.refresh();
+        }
+
         // Reset form jika create
         if (mode === "create") {
           setFormData({

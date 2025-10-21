@@ -93,6 +93,44 @@ function generateTemporaryPassword(): string {
 }
 
 /**
+ * Generate unique username from full name
+ * Format: firstname.lastname or firstname.lastname2, firstname.lastname3, etc
+ */
+async function generateUniqueUsername(fullName: string): Promise<string> {
+  const supabase = await createClient();
+
+  // Clean and format name
+  const cleanName = fullName
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z\s]/g, "") // Remove non-letter characters
+    .replace(/\s+/g, "."); // Replace spaces with dots
+
+  // Try base username first
+  let username = cleanName;
+  let counter = 1;
+
+  // Check if username exists, if yes, add counter
+  while (true) {
+    const { data: existingUser } = await supabase
+      .from("users")
+      .select("id")
+      .eq("username", username)
+      .is("deleted_at", null)
+      .single();
+
+    if (!existingUser) {
+      // Username is unique
+      return username;
+    }
+
+    // Username exists, try with counter
+    counter++;
+    username = `${cleanName}${counter}`;
+  }
+}
+
+/**
  * Server Action untuk create employee dengan akun user
  */
 export async function createEmployeeWithUser(data: {
@@ -100,7 +138,6 @@ export async function createEmployeeWithUser(data: {
   company_id: number;
   department_id: number;
   position_id: number;
-  shift_id: number;
   full_name: string;
   phone_number: string;
   email: string;
@@ -109,7 +146,6 @@ export async function createEmployeeWithUser(data: {
   hire_date: string;
   // User account data
   create_user_account: boolean;
-  username?: string;
   role_id?: number;
   // Contract data (status will be derived from contract_type)
   contract_type?: "Probation" | "Contract" | "Permanent";
@@ -157,7 +193,6 @@ export async function createEmployeeWithUser(data: {
         company_id: data.company_id,
         department_id: data.department_id,
         position_id: data.position_id,
-        shift_id: data.shift_id,
         full_name: data.full_name,
         phone_number: data.phone_number,
         email: data.email,
@@ -202,16 +237,20 @@ export async function createEmployeeWithUser(data: {
 
     let tempPassword = "";
     let authUserId = "";
+    let generatedUsername = "";
 
     // 3. Jika diminta create user account
-    if (data.create_user_account && data.username && data.role_id) {
-      // Generate temporary password
+    if (data.create_user_account && data.role_id) {
+      // A. Generate unique username from full name
+      generatedUsername = await generateUniqueUsername(data.full_name);
+
+      // B. Generate temporary password
       tempPassword = generateTemporaryPassword();
 
-      // Hash password untuk disimpan di database
+      // C. Hash password untuk disimpan di database
       const hashedPassword = await bcrypt.hash(tempPassword, 10);
 
-      // A. Create user di Supabase Auth using ADMIN CLIENT
+      // D. Create user di Supabase Auth using ADMIN CLIENT
       const adminClient = createAdminClient();
       const { data: authUser, error: authError } =
         await adminClient.auth.admin.createUser({
@@ -237,30 +276,11 @@ export async function createEmployeeWithUser(data: {
 
       authUserId = authUser.user.id;
 
-      // B. Validasi username unique
-      const { data: existingUser } = await supabase
-        .from("users")
-        .select("id")
-        .eq("username", data.username)
-        .is("deleted_at", null)
-        .single();
-
-      if (existingUser) {
-        // Rollback: delete employee dan auth user
-        await supabase.from("employees").delete().eq("id", employee.id);
-        await adminClient.auth.admin.deleteUser(authUserId);
-
-        return {
-          success: false,
-          error: "Username sudah digunakan",
-        };
-      }
-
-      // C. Insert ke tabel users dengan hashed password
+      // E. Insert ke tabel users dengan hashed password dan generated username
       const { error: userError } = await supabase.from("users").insert({
         auth_user_id: authUserId,
         employee_id: employee.id,
-        username: data.username,
+        username: generatedUsername,
         password_hash: hashedPassword, // ← Hash password disimpan
         role_id: data.role_id,
         is_active: true,
@@ -326,7 +346,7 @@ export async function createEmployeeWithUser(data: {
     if (data.create_user_account && tempPassword) {
       console.log("🔐 Temp Password (plain text):", tempPassword);
       console.log("📧 Email:", data.email);
-      console.log("👤 Username:", data.username);
+      console.log("👤 Username (generated):", generatedUsername);
     }
 
     return {
@@ -337,6 +357,7 @@ export async function createEmployeeWithUser(data: {
       data: {
         employee,
         tempPassword: data.create_user_account ? tempPassword : null,
+        username: data.create_user_account ? generatedUsername : null,
       },
     };
   } catch (error) {
@@ -358,7 +379,6 @@ export async function updateEmployee(
     company_id: number;
     department_id: number;
     position_id: number;
-    shift_id: number;
     full_name: string;
     phone_number: string;
     email: string;
@@ -390,7 +410,6 @@ export async function updateEmployee(
         company_id: data.company_id,
         department_id: data.department_id,
         position_id: data.position_id,
-        shift_id: data.shift_id,
         full_name: data.full_name,
         phone_number: data.phone_number,
         email: data.email,

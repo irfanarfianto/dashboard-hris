@@ -11,11 +11,13 @@ import { useRouter } from "next/navigation";
 interface DeleteButtonProps {
   employeeId: number;
   employeeName: string;
+  onSuccess?: () => void;
 }
 
 export default function DeleteButton({
   employeeId,
   employeeName,
+  onSuccess,
 }: DeleteButtonProps) {
   const [isDeleting, setIsDeleting] = useState(false);
   const [showDialog, setShowDialog] = useState(false);
@@ -34,7 +36,11 @@ export default function DeleteButton({
       if (result.success) {
         toast.success(result.message || "Karyawan berhasil diarsipkan");
         setShowDialog(false);
-        router.refresh();
+        if (onSuccess) {
+          onSuccess();
+        } else {
+          router.refresh();
+        }
       } else {
         toast.error(result.error || "Gagal mengarsipkan karyawan");
       }

@@ -413,7 +413,7 @@ export async function createWorkShift(formData: {
       return { success: false, error: error.message };
     }
 
-    revalidatePath("/dashboard/work-shifts");
+    revalidatePath("/dashboard/shifts");
     return { success: true, message: "Shift kerja berhasil ditambahkan" };
   } catch (error) {
     console.error("Error creating work shift:", error);
@@ -442,7 +442,7 @@ export async function updateWorkShift(
       return { success: false, error: error.message };
     }
 
-    revalidatePath("/dashboard/work-shifts");
+    revalidatePath("/dashboard/shifts");
     return { success: true, message: "Shift kerja berhasil diupdate" };
   } catch (error) {
     console.error("Error updating work shift:", error);
@@ -463,7 +463,7 @@ export async function deleteWorkShift(id: number) {
       return { success: false, error: error.message };
     }
 
-    revalidatePath("/dashboard/work-shifts");
+    revalidatePath("/dashboard/shifts");
     return { success: true, message: "Shift kerja berhasil dihapus" };
   } catch (error) {
     console.error("Error deleting work shift:", error);

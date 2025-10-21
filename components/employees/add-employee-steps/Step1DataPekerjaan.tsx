@@ -15,7 +15,6 @@ interface FormDataStep1 {
   company_id: string;
   department_id: string;
   position_id: string;
-  shift_id: string;
   contract_type: "Probation" | "Contract" | "Permanent";
   contract_end_date: string;
   [key: string]: string | boolean;
@@ -30,12 +29,6 @@ interface Step1DataPekerjaanProps {
   companies: Array<{ id: number; name: string }>;
   departments: Array<{ id: number; name: string }>;
   positions: Array<{ id: number; name: string }>;
-  workShifts: Array<{
-    id: number;
-    name: string;
-    start_time: string;
-    end_time: string;
-  }>;
   onFormDataChange: (data: Partial<FormDataStep1>) => void;
   onSalaryChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
   onContractEndDateChange: (date: Date | undefined) => void;
@@ -51,7 +44,6 @@ export default function Step1DataPekerjaan({
   companies,
   departments,
   positions,
-  workShifts,
   onFormDataChange,
   onSalaryChange,
   onContractEndDateChange,
@@ -146,31 +138,6 @@ export default function Step1DataPekerjaan({
                 {positions.map((p) => (
                   <SelectItem key={p.id} value={p.id.toString()}>
                     {p.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-
-          {/* Shift */}
-          <div>
-            <Label htmlFor="shift_id">
-              Shift Kerja <span className="text-red-500">*</span>
-            </Label>
-            <Select
-              value={formData.shift_id}
-              onValueChange={(value) =>
-                onFormDataChange({ ...formData, shift_id: value })
-              }
-              required
-            >
-              <SelectTrigger className="mt-1">
-                <SelectValue placeholder="Pilih Shift" />
-              </SelectTrigger>
-              <SelectContent>
-                {workShifts.map((s) => (
-                  <SelectItem key={s.id} value={s.id.toString()}>
-                    {s.name} ({s.start_time} - {s.end_time})
                   </SelectItem>
                 ))}
               </SelectContent>

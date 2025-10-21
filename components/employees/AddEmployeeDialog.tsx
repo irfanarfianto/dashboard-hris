@@ -23,10 +23,12 @@ import { useAddEmployeeForm } from "./add-employee-steps/useAddEmployeeForm";
 
 interface AddEmployeeDialogProps {
   children: React.ReactNode;
+  onSuccess?: () => void;
 }
 
 export default function AddEmployeeDialog({
   children,
+  onSuccess,
 }: AddEmployeeDialogProps) {
   const {
     // State
@@ -34,6 +36,7 @@ export default function AddEmployeeDialog({
     isSubmitting,
     showSuccess,
     tempPassword,
+    generatedUsername,
     copiedPassword,
     currentStep,
     salaryDisplay,
@@ -47,7 +50,6 @@ export default function AddEmployeeDialog({
     companies,
     departments,
     positions,
-    workShifts,
     roles,
     formData,
     personnelDetails,
@@ -69,7 +71,7 @@ export default function AddEmployeeDialog({
     handleNext,
     handlePrevious,
     canGoNext,
-  } = useAddEmployeeForm();
+  } = useAddEmployeeForm(onSuccess);
 
   const steps = [
     { number: 1, title: "Data Pekerjaan", icon: Briefcase },
@@ -108,6 +110,7 @@ export default function AddEmployeeDialog({
                     ?.name || "-"
                 }
                 email={formData.email}
+                username={generatedUsername}
                 tempPassword={tempPassword}
                 copiedPassword={copiedPassword}
                 onCopyPassword={copyPassword}
@@ -171,7 +174,6 @@ export default function AddEmployeeDialog({
                         companies={companies}
                         departments={departments}
                         positions={positions}
-                        workShifts={workShifts}
                         onFormDataChange={(data) =>
                           setFormData({ ...formData, ...data })
                         }
@@ -233,7 +235,6 @@ export default function AddEmployeeDialog({
                         companies={companies}
                         departments={departments}
                         positions={positions}
-                        workShifts={workShifts}
                         roles={roles}
                       />
                     )}

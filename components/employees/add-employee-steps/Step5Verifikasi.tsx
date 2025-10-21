@@ -13,7 +13,6 @@ interface Step5VerifikasiProps {
     company_id: string;
     department_id: string;
     position_id: string;
-    shift_id: string;
     full_name: string;
     phone_number: string;
     email: string;
@@ -24,7 +23,6 @@ interface Step5VerifikasiProps {
     salary_base: string;
     contract_end_date: string;
     create_user_account: boolean;
-    username: string;
     role_id: string;
   };
   personnelDetails: {
@@ -45,12 +43,6 @@ interface Step5VerifikasiProps {
   companies: Array<{ id: number; name: string }>;
   departments: Array<{ id: number; name: string }>;
   positions: Array<{ id: number; name: string }>;
-  workShifts: Array<{
-    id: number;
-    name: string;
-    start_time: string;
-    end_time: string;
-  }>;
   roles: Array<{ id: number; name: string; description?: string }>;
 }
 
@@ -62,7 +54,6 @@ export default function Step5Verifikasi({
   companies,
   departments,
   positions,
-  workShifts,
   roles,
 }: Step5VerifikasiProps) {
   // Helper functions to get names from IDs
@@ -73,12 +64,6 @@ export default function Step5Verifikasi({
     "-";
   const getPositionName = () =>
     positions.find((p) => p.id === parseInt(formData.position_id))?.name || "-";
-  const getShiftName = () => {
-    const shift = workShifts.find((s) => s.id === parseInt(formData.shift_id));
-    return shift
-      ? `${shift.name} (${shift.start_time} - ${shift.end_time})`
-      : "-";
-  };
   const getRoleName = () =>
     roles.find((r) => r.id === parseInt(formData.role_id))?.name || "-";
 
@@ -150,14 +135,6 @@ export default function Step5Verifikasi({
               <span className="text-gray-600 dark:text-gray-400">Jabatan:</span>
               <p className="font-medium text-gray-900 dark:text-gray-100">
                 {getPositionName()}
-              </p>
-            </div>
-            <div>
-              <span className="text-gray-600 dark:text-gray-400">
-                Shift Kerja:
-              </span>
-              <p className="font-medium text-gray-900 dark:text-gray-100">
-                {getShiftName()}
               </p>
             </div>
             <div>
@@ -357,25 +334,23 @@ export default function Step5Verifikasi({
             Akun User Aplikasi
           </h4>
           {formData.create_user_account ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
-              <div>
-                <span className="text-gray-600 dark:text-gray-400">
-                  Username:
-                </span>
-                <p className="font-medium text-gray-900 dark:text-gray-100">
-                  {formData.username}
-                </p>
-              </div>
+            <div className="grid grid-cols-1 gap-3 text-sm">
               <div>
                 <span className="text-gray-600 dark:text-gray-400">Role:</span>
                 <div className="font-medium text-gray-900 dark:text-gray-100">
                   <Badge variant="outline">{getRoleName()}</Badge>
                 </div>
               </div>
-              <div className="md:col-span-2">
-                <p className="text-xs text-amber-700 dark:text-amber-300">
-                  ℹ️ Password sementara akan di-generate otomatis setelah data
-                  berhasil disimpan
+              <div className="p-3 bg-blue-50 dark:bg-blue-900/10 rounded-lg border border-blue-200 dark:border-blue-800">
+                <p className="text-xs text-blue-700 dark:text-blue-300">
+                  ℹ️ Username akan di-generate otomatis dari nama lengkap
+                  karyawan
+                </p>
+                <p className="text-xs text-blue-700 dark:text-blue-300 mt-1">
+                  ℹ️ Password sementara akan di-generate otomatis oleh sistem
+                </p>
+                <p className="text-xs text-blue-700 dark:text-blue-300 mt-1">
+                  ℹ️ Keduanya akan ditampilkan setelah data berhasil disimpan
                 </p>
               </div>
             </div>

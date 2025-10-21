@@ -9,6 +9,7 @@ interface SuccessScreenProps {
   department: string;
   position: string;
   email: string;
+  username: string;
   tempPassword: string;
   copiedPassword: boolean;
   onCopyPassword: () => void;
@@ -20,6 +21,7 @@ export default function SuccessScreen({
   department,
   position,
   email,
+  username,
   tempPassword,
   copiedPassword,
   onCopyPassword,
@@ -38,6 +40,7 @@ Selamat bergabung di PT Bharata Internasional! 🎉
 💼 Posisi: ${position}
 
 *Kredensial Login HRIS:*
+👤 Username: ${username}
 📧 Email: ${email}
 🔑 Password Sementara: ${tempPassword}
 

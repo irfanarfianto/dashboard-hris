@@ -46,7 +46,6 @@ interface EditEmployeeDialogProps {
     company_id: number;
     department_id: number;
     position_id: number;
-    shift_id: number;
     contract_type: "Probation" | "Contract" | "Permanent";
     salary_base?: number;
     contract_end_date?: string;
@@ -102,9 +101,6 @@ export default function EditEmployeeDialog({
   const [companies] = useState<Array<{ id: number; name: string }>>([]);
   const [departments] = useState<Array<{ id: number; name: string }>>([]);
   const [positions] = useState<Array<{ id: number; name: string }>>([]);
-  const [workShifts] = useState<
-    Array<{ id: number; name: string; start_time: string; end_time: string }>
-  >([]);
   const [roles] = useState<Array<{ id: number; name: string }>>([]);
 
   // Form data
@@ -112,7 +108,6 @@ export default function EditEmployeeDialog({
     company_id: "",
     department_id: "",
     position_id: "",
-    shift_id: "",
     full_name: "",
     phone_number: "",
     email: "",
@@ -147,7 +142,6 @@ export default function EditEmployeeDialog({
         company_id: employee.company_id?.toString() || "",
         department_id: employee.department_id?.toString() || "",
         position_id: employee.position_id?.toString() || "",
-        shift_id: employee.shift_id?.toString() || "",
         full_name: employee.full_name || "",
         phone_number: employee.phone_number || "",
         email: employee.email || "",
@@ -219,7 +213,6 @@ export default function EditEmployeeDialog({
         company_id: parseInt(formData.company_id),
         department_id: parseInt(formData.department_id),
         position_id: parseInt(formData.position_id),
-        shift_id: parseInt(formData.shift_id),
         full_name: formData.full_name,
         phone_number: formData.phone_number,
         email: formData.email,
@@ -276,7 +269,6 @@ export default function EditEmployeeDialog({
           formData.company_id &&
           formData.department_id &&
           formData.position_id &&
-          formData.shift_id &&
           formData.contract_type &&
           salaryNumeric > 0
         );
@@ -362,7 +354,6 @@ export default function EditEmployeeDialog({
                 companies={companies}
                 departments={departments}
                 positions={positions}
-                workShifts={workShifts}
                 onFormDataChange={(data) =>
                   setFormData({ ...formData, ...data })
                 }
@@ -436,7 +427,6 @@ export default function EditEmployeeDialog({
                 companies={companies}
                 departments={departments}
                 positions={positions}
-                workShifts={workShifts}
                 roles={roles}
               />
             )}

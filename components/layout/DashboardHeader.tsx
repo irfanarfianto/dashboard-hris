@@ -2,7 +2,7 @@
 
 import { LogoutButton } from "@/components/logout-button";
 import { ThemeSwitcher } from "@/components/theme-switcher";
-import { Bell, User, Settings } from "lucide-react";
+import { Bell, User, Settings, Menu } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -17,16 +17,31 @@ import { Badge } from "@/components/ui/badge";
 interface DashboardHeaderProps {
   userEmail?: string;
   userName?: string;
+  onMenuClick?: () => void;
 }
 
 export default function DashboardHeader({
   userEmail,
   userName,
+  onMenuClick,
 }: DashboardHeaderProps) {
   return (
-    <header className="sticky top-0 z-40 flex h-16 items-center justify-between border-b bg-white/80 backdrop-blur-md px-6 dark:bg-gray-950/80 shadow-sm">
-      {/* Left Section - Title/Breadcrumb (bisa dikembangkan) */}
+    <header className="sticky top-0 z-40 flex h-16 items-center justify-between border-b bg-white/80 backdrop-blur-md px-4 md:px-6 dark:bg-gray-950/80 shadow-sm">
+      {/* Left Section - Hamburger & Title */}
       <div className="flex items-center gap-4">
+        {/* Hamburger Button - Only visible on mobile */}
+        {onMenuClick && (
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={onMenuClick}
+            className="lg:hidden h-9 w-9 hover:bg-teal-50 dark:hover:bg-teal-900/20"
+            aria-label="Toggle menu"
+          >
+            <Menu className="h-5 w-5 text-gray-600 dark:text-gray-400" />
+          </Button>
+        )}
+
         <h1 className="text-lg font-semibold bg-gradient-to-r from-teal-600 to-lime-600 bg-clip-text text-transparent dark:from-teal-400 dark:to-lime-400">
           Dashboard
         </h1>

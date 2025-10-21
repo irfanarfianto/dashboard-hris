@@ -14,7 +14,6 @@ import {
   Calendar,
   MapPin,
   CreditCard,
-  Clock,
   Building2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -42,7 +41,6 @@ interface EmployeeDetailViewProps {
     company_id: number;
     department_id: number;
     position_id: number;
-    shift_id: number;
     contract_type: "Probation" | "Contract" | "Permanent";
     salary_base?: number;
     contract_end_date?: string;
@@ -54,7 +52,6 @@ interface EmployeeDetailViewProps {
       name: string;
       position_levels?: { name: string };
     };
-    work_shifts: { name: string; start_time: string; end_time: string };
     employee_personnel_details?: Array<{
       religion: string;
       marital_status: string;
@@ -183,19 +180,6 @@ export default function EmployeeDetailView({
                 <p className="font-medium text-gray-900 dark:text-gray-100 mt-1">
                   {employee.positions?.position_levels?.name || "-"}
                 </p>
-              </div>
-              <div>
-                <label className="text-sm text-gray-600 dark:text-gray-400">
-                  Shift Kerja
-                </label>
-                <div className="flex items-center gap-2 mt-1">
-                  <Clock className="h-4 w-4 text-gray-400" />
-                  <p className="font-medium text-gray-900 dark:text-gray-100">
-                    {employee.work_shifts?.name} (
-                    {employee.work_shifts?.start_time} -{" "}
-                    {employee.work_shifts?.end_time})
-                  </p>
-                </div>
               </div>
               <div>
                 <label className="text-sm text-gray-600 dark:text-gray-400">

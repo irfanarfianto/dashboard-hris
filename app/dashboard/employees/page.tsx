@@ -1,4 +1,7 @@
-import { createClient } from "@/lib/supabase/server";
+"use client";
+
+import { useEffect, useState } from "react";
+import { createClient } from "@/lib/supabase/client";
 import {
   Card,
   CardContent,
@@ -6,8 +9,15 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Users, UserPlus } from "lucide-react";
+import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import {
+  Users,
+  UserPlus,
+  Search,
+  ChevronLeft,
+  ChevronRight,
+} from "lucide-react";
 import Link from "next/link";
 import DeleteButton from "@/components/employees/DeleteButton";
 import AddEmployeeDialog from "@/components/employees/AddEmployeeDialog";
@@ -28,36 +38,94 @@ interface Employee {
   } | null;
 }
 
-export default async function EmployeesPage() {
-  const supabase = await createClient();
+export default function EmployeesPage() {
+  const [employees, setEmployees] = useState<Employee[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
 
-  // Fetch employees data dengan join ke departments dan positions
-  const { data: employees, error } = await supabase
-    .from("employees")
-    .select(
+  const fetchEmployees = async () => {
+    setLoading(true);
+    const supabase = createClient();
+
+    const { data, error } = await supabase
+      .from("employees")
+      .select(
+        `
+        id,
+        full_name,
+        email,
+        gender,
+        department_id,
+        position_id,
+        departments:department_id (
+          name
+        ),
+        positions:position_id (
+          name
+        )
       `
-      id,
-      full_name,
-      email,
-      gender,
-      department_id,
-      position_id,
-      departments:department_id (
-        name
-      ),
-      positions:position_id (
-        name
       )
-    `
-    )
-    .is("deleted_at", null) // Hanya ambil yang tidak diarsipkan
-    .order("full_name", { ascending: true });
+      .is("deleted_at", null)
+      .order("full_name", { ascending: true });
 
-  if (error) {
-    console.error("Error fetching employees:", error);
+    if (error) {
+      console.error("Error fetching employees:", error);
+    }
+
+    setEmployees((data || []) as unknown as Employee[]);
+    setLoading(false);
+  };
+
+  useEffect(() => {
+    fetchEmployees();
+  }, []);
+
+  // Filter employees based on search query
+  const filteredEmployees = employees.filter((employee) => {
+    if (!searchQuery.trim()) return true;
+
+    const query = searchQuery.toLowerCase();
+    const fullName = employee.full_name.toLowerCase();
+    const email = employee.email?.toLowerCase() || "";
+    const deptName = employee.departments?.name?.toLowerCase() || "";
+    const positionName = employee.positions?.name?.toLowerCase() || "";
+
+    return (
+      fullName.includes(query) ||
+      email.includes(query) ||
+      deptName.includes(query) ||
+      positionName.includes(query)
+    );
+  });
+
+  // Pagination logic
+  const totalPages = Math.ceil(filteredEmployees.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const currentEmployees = filteredEmployees.slice(startIndex, endIndex);
+
+  // Reset to page 1 when search query changes
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchQuery]);
+
+  const handleRefresh = () => {
+    fetchEmployees();
+  };
+
+  // Calculate stats from filtered data
+  const maleCount = filteredEmployees.filter((e) => e.gender === "L").length;
+  const femaleCount = filteredEmployees.filter((e) => e.gender === "P").length;
+
+  if (loading) {
+    return (
+      <div className="space-y-6">
+        <div className="text-center py-10">Loading...</div>
+      </div>
+    );
   }
-
-  const employeeList = (employees || []) as unknown as Employee[];
 
   return (
     <div className="space-y-6">
@@ -71,7 +139,7 @@ export default async function EmployeesPage() {
             Kelola data master karyawan dan akun pengguna
           </p>
         </div>
-        <AddEmployeeDialog>
+        <AddEmployeeDialog onSuccess={handleRefresh}>
           <Button className="gap-2 bg-gradient-to-r from-teal-500 to-teal-600 hover:from-teal-600 hover:to-teal-700 shadow-lg">
             <UserPlus className="h-4 w-4" />
             Tambah Karyawan
@@ -89,9 +157,9 @@ export default async function EmployeesPage() {
             <Users className="h-4 w-4 text-blue-600" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{employeeList.length}</div>
+            <div className="text-2xl font-bold">{filteredEmployees.length}</div>
             <p className="text-xs text-gray-600 dark:text-gray-400">
-              Karyawan terdaftar
+              {searchQuery ? "Hasil pencarian" : "Karyawan terdaftar"}
             </p>
           </CardContent>
         </Card>
@@ -102,9 +170,7 @@ export default async function EmployeesPage() {
             <div className="h-2 w-2 rounded-full bg-blue-500" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">
-              {employeeList.filter((e) => e.gender === "L").length}
-            </div>
+            <div className="text-2xl font-bold">{maleCount}</div>
             <p className="text-xs text-gray-600 dark:text-gray-400">
               Karyawan pria
             </p>
@@ -117,14 +183,31 @@ export default async function EmployeesPage() {
             <div className="h-2 w-2 rounded-full bg-pink-500" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">
-              {employeeList.filter((e) => e.gender === "P").length}
-            </div>
+            <div className="text-2xl font-bold">{femaleCount}</div>
             <p className="text-xs text-gray-600 dark:text-gray-400">
               Karyawan wanita
             </p>
           </CardContent>
         </Card>
+      </div>
+
+      {/* Search Bar */}
+      <div className="flex items-center gap-2">
+        <div className="relative flex-1">
+          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+          <Input
+            type="text"
+            placeholder="Cari berdasarkan nama, email, departemen, atau posisi..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="pl-9"
+          />
+        </div>
+        {searchQuery && (
+          <span className="text-sm text-muted-foreground whitespace-nowrap">
+            {filteredEmployees.length} hasil
+          </span>
+        )}
       </div>
 
       {/* Table Card */}
@@ -162,23 +245,25 @@ export default async function EmployeesPage() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
-                {employeeList.length === 0 ? (
+                {currentEmployees.length === 0 ? (
                   <tr>
                     <td
                       colSpan={6}
                       className="px-4 py-8 text-center text-gray-500"
                     >
-                      Tidak ada data karyawan
+                      {searchQuery
+                        ? "Tidak ada karyawan yang cocok dengan pencarian"
+                        : "Tidak ada data karyawan"}
                     </td>
                   </tr>
                 ) : (
-                  employeeList.map((employee, index) => (
+                  currentEmployees.map((employee, index) => (
                     <tr
                       key={employee.id}
                       className="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors"
                     >
                       <td className="px-4 py-3 text-sm text-gray-900 dark:text-gray-100">
-                        {index + 1}
+                        {startIndex + index + 1}
                       </td>
                       <td className="px-4 py-3">
                         <div className="flex items-center gap-3">
@@ -230,12 +315,14 @@ export default async function EmployeesPage() {
 
           {/* Mobile Cards */}
           <div className="md:hidden space-y-4">
-            {employeeList.length === 0 ? (
+            {currentEmployees.length === 0 ? (
               <div className="py-8 text-center text-gray-500">
-                Tidak ada data karyawan
+                {searchQuery
+                  ? "Tidak ada karyawan yang cocok dengan pencarian"
+                  : "Tidak ada data karyawan"}
               </div>
             ) : (
-              employeeList.map((employee) => (
+              currentEmployees.map((employee) => (
                 <Card
                   key={employee.id}
                   className="hover:shadow-md transition-shadow"
@@ -294,6 +381,7 @@ export default async function EmployeesPage() {
                       <DeleteButton
                         employeeId={employee.id}
                         employeeName={employee.full_name}
+                        onSuccess={handleRefresh}
                       />
                     </div>
                   </CardContent>
@@ -301,6 +389,78 @@ export default async function EmployeesPage() {
               ))
             )}
           </div>
+
+          {/* Pagination Controls */}
+          {totalPages > 1 && (
+            <div className="mt-6 flex items-center justify-between border-t pt-4">
+              <div className="text-sm text-gray-500">
+                Halaman {currentPage} dari {totalPages} (
+                {filteredEmployees.length} total)
+              </div>
+              <div className="flex items-center gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() =>
+                    setCurrentPage((prev) => Math.max(1, prev - 1))
+                  }
+                  disabled={currentPage === 1}
+                >
+                  <ChevronLeft className="h-4 w-4" />
+                  Sebelumnya
+                </Button>
+
+                <div className="hidden sm:flex gap-1">
+                  {Array.from({ length: totalPages }, (_, i) => i + 1).map(
+                    (page) => {
+                      // Show first page, last page, current page, and adjacent pages
+                      if (
+                        page === 1 ||
+                        page === totalPages ||
+                        (page >= currentPage - 1 && page <= currentPage + 1)
+                      ) {
+                        return (
+                          <Button
+                            key={page}
+                            variant={
+                              currentPage === page ? "default" : "outline"
+                            }
+                            size="sm"
+                            onClick={() => setCurrentPage(page)}
+                            className="w-10"
+                          >
+                            {page}
+                          </Button>
+                        );
+                      } else if (
+                        page === currentPage - 2 ||
+                        page === currentPage + 2
+                      ) {
+                        return (
+                          <span key={page} className="px-2 py-1">
+                            ...
+                          </span>
+                        );
+                      }
+                      return null;
+                    }
+                  )}
+                </div>
+
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() =>
+                    setCurrentPage((prev) => Math.min(totalPages, prev + 1))
+                  }
+                  disabled={currentPage === totalPages}
+                >
+                  Selanjutnya
+                  <ChevronRight className="h-4 w-4" />
+                </Button>
+              </div>
+            </div>
+          )}
         </CardContent>
       </Card>
     </div>

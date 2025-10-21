@@ -4,6 +4,26 @@ Dokumentasi lengkap untuk HRIS Bharata Dashboard.
 
 ## 📑 Table of Contents
 
+### 👨‍💻 Developer Guide (NEW!)
+
+**[📖 Developer Guide](./DEV_GUIDE.md)** - Panduan lengkap untuk developer
+
+- Arsitektur sistem & tech stack
+- Setup development environment
+- Konvensi kode & best practices
+- Navigasi ke semua panduan development
+
+#### How-To Guides
+
+- **[Create CRUD Feature](./how-to/CREATE_CRUD_FEATURE.md)** - Membuat fitur CRUD baru dari awal
+- **[Add Search & Pagination](./how-to/ADD_SEARCH_PAGINATION.md)** - Implementasi search dan pagination
+
+#### Migration Guides
+
+- **[Migrate from Supabase](./migration/MIGRATE_FROM_SUPABASE.md)** - Panduan lengkap migrasi backend
+
+---
+
 ### 🎯 Core Features
 
 1. **[Employee Management](./EMPLOYEE_FEATURE_GUIDE.md)**
@@ -78,34 +98,73 @@ Dokumentasi lengkap untuk HRIS Bharata Dashboard.
     - Current location detection
 
 13. **[Geolocation Troubleshooting](./GEOLOCATION_TROUBLESHOOTING.md)**
+
     - Fix "User denied Geolocation" errors
     - HTTPS requirements
     - Browser permission settings guide
     - System location services setup
     - Error code reference
 
+14. **[Shift Management](./SHIFT_MANAGEMENT_GUIDE.md)**
+
+    - Work shift management
+    - Shift creation & assignment
+    - Position-based shifts
+
+15. **[Shift Bulk Create Feature](./SHIFT_BULK_CREATE_FEATURE.md)**
+
+    - Create shift untuk multiple positions sekaligus
+    - Multi-select position checkbox
+    - Bulk operations untuk efficiency
+
+16. **[Shift Search Feature](./SHIFT_SEARCH_FEATURE.md)**
+
+    - Search shift by name, position, department
+    - Real-time filtering
+    - Grouped display by position
+
+17. **[Position Search & Pagination](./POSITION_SEARCH_PAGINATION.md)**
+
+    - Multi-field search (5 fields)
+    - 10 items per page pagination
+    - Sequential numbering
+    - Responsive controls
+
+18. **[Employee Search & Pagination](./EMPLOYEE_SEARCH_PAGINATION.md)**
+    - Multi-field search (4 fields: name, email, dept, position)
+    - Gender-based stats dengan filtering
+    - Auto-refresh after CRUD
+    - Consistent pattern dengan positions
+
 ---
 
 ### 🎨 UI/UX Components
 
-9. **[Sidebar Navigation](./SIDEBAR_RESTRUCTURE.md)**
+19. **[Responsive Sidebar Mobile](./RESPONSIVE_SIDEBAR_MOBILE.md)**
 
-   - Sidebar restructure dengan grouping
-   - Menu organization & hierarchy
-   - Placeholder pages untuk fitur yang akan datang
+- Mobile-friendly sidebar
+- Hamburger menu
+- Backdrop overlay & animations
+- Auto-show/hide based on screen size
 
-10. **[Skeleton Loading](./SKELETON_LOADING_GUIDE.md)**
+20. **[Sidebar Navigation](./SIDEBAR_RESTRUCTURE.md)**
+
+- Sidebar restructure dengan grouping
+- Menu organization & hierarchy
+- Placeholder pages untuk fitur yang akan datang
+
+21. **[Skeleton Loading](./SKELETON_LOADING_GUIDE.md)**
 
     - Loading states dengan react-loading-skeleton
     - Dark mode support
     - TableSkeleton, DetailSkeleton, DashboardSkeleton
 
-11. **[Toast Implementation](./TOAST_IMPLEMENTATION.md)**
+22. **[Toast Implementation](./TOAST_IMPLEMENTATION.md)**
 
     - Toast notifications dengan Sonner
     - Success, error, dan loading states
 
-12. **[Delete Confirmation Dialog](./EMPLOYEE_FEATURE_GUIDE.md#delete-confirmation)**
+23. **[Delete Confirmation Dialog](./EMPLOYEE_FEATURE_GUIDE.md#delete-confirmation)**
     - Reusable DeleteConfirmDialog component
     - Consistent delete UX
 
