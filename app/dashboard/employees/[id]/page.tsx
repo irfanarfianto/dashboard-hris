@@ -2,6 +2,10 @@ import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import EmployeeDetailView from "@/components/employees/EmployeeDetailView";
 
+// Enable dynamic params
+export const dynamicParams = true;
+export const dynamic = "force-dynamic";
+
 interface EmployeeDetailPageProps {
   params: Promise<{
     id: string;
@@ -21,7 +25,6 @@ async function getEmployeeDetail(id: number) {
         companies:company_id (id, name),
         departments:department_id (id, name),
         positions:position_id (id, name, level_id),
-        work_shifts:shift_id (id, name, start_time, end_time),
         employee_personnel_details (*),
         employee_educations (*)
       `
@@ -51,6 +54,22 @@ async function getEmployeeDetail(id: number) {
       if (positionLevel) {
         employee.positions.position_levels = positionLevel;
       }
+    }
+
+    // Get shift schedules for the employee
+    const { data: shiftSchedules } = await supabase
+      .from("employee_shift_schedules")
+      .select(
+        `
+        *,
+        work_shifts:shift_id (id, name, start_time, end_time, description)
+      `
+      )
+      .eq("employee_id", id)
+      .is("deleted_at", null);
+
+    if (shiftSchedules && shiftSchedules.length > 0) {
+      employee.shift_schedules = shiftSchedules;
     }
 
     // Get user data with role separately

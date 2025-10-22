@@ -20,7 +20,13 @@ import Step1DataPekerjaan from "./add-employee-steps/Step1DataPekerjaan";
 import Step2DataPribadi from "./add-employee-steps/Step2DataPribadi";
 import Step3DataPendidikan from "./add-employee-steps/Step3DataPendidikan";
 import Step5Verifikasi from "./add-employee-steps/Step5Verifikasi";
-import { updateEmployee } from "@/lib/actions/employeeActions";
+import {
+  updateEmployee,
+  getCompanies,
+  getDepartmentsByCompany,
+  getPositionsByDepartment,
+  getRoles,
+} from "@/lib/actions/employeeActions";
 import { handleRupiahInput, formatRupiah } from "@/lib/utils/currency";
 import { useRouter } from "next/navigation";
 
@@ -97,11 +103,17 @@ export default function EditEmployeeDialog({
     graduation_year: "",
   });
 
-  // Dropdown data - will be loaded from form components
-  const [companies] = useState<Array<{ id: number; name: string }>>([]);
-  const [departments] = useState<Array<{ id: number; name: string }>>([]);
-  const [positions] = useState<Array<{ id: number; name: string }>>([]);
-  const [roles] = useState<Array<{ id: number; name: string }>>([]);
+  // Dropdown data
+  const [companies, setCompanies] = useState<
+    Array<{ id: number; name: string }>
+  >([]);
+  const [departments, setDepartments] = useState<
+    Array<{ id: number; name: string }>
+  >([]);
+  const [positions, setPositions] = useState<
+    Array<{ id: number; name: string }>
+  >([]);
+  const [roles, setRoles] = useState<Array<{ id: number; name: string }>>([]);
 
   // Form data
   const [formData, setFormData] = useState({
@@ -131,6 +143,62 @@ export default function EditEmployeeDialog({
     domicile_address: "",
     npwp_number: "",
   });
+
+  // Load master data when dialog opens
+  useEffect(() => {
+    if (isOpen) {
+      loadMasterData();
+    }
+  }, [isOpen]);
+
+  // Load departments when company changes
+  useEffect(() => {
+    if (formData.company_id) {
+      loadDepartments(parseInt(formData.company_id));
+    }
+  }, [formData.company_id]);
+
+  // Load positions when department changes
+  useEffect(() => {
+    if (formData.department_id) {
+      loadPositions(parseInt(formData.department_id));
+    }
+  }, [formData.department_id]);
+
+  const loadMasterData = async () => {
+    try {
+      const [companiesData, rolesData] = await Promise.all([
+        getCompanies(),
+        getRoles(),
+      ]);
+
+      setCompanies(companiesData.data || []);
+      setRoles(rolesData.data || []);
+    } catch (error) {
+      console.error("Error loading master data:", error);
+      toast.error("Gagal memuat data master");
+    }
+  };
+
+  const loadDepartments = async (companyId: number) => {
+    try {
+      const result = await getDepartmentsByCompany(companyId);
+      setDepartments(result.data || []);
+    } catch (error) {
+      console.error("Error loading departments:", error);
+      setDepartments([]);
+    }
+  };
+
+  const loadPositions = async (departmentId: number) => {
+    try {
+      const result = await getPositionsByDepartment(departmentId);
+      setPositions(result.data || []);
+    } catch (error) {
+      console.error("Error loading positions:", error);
+      setPositions([]);
+    }
+  };
 
   // Initialize form with employee data
   useEffect(() => {
@@ -192,6 +260,14 @@ export default function EditEmployeeDialog({
       // Set education
       if (employee.employee_educations) {
         setEducationList(employee.employee_educations);
+      }
+
+      // Load related data based on employee's company and department
+      if (employee.company_id) {
+        loadDepartments(employee.company_id);
+      }
+      if (employee.department_id) {
+        loadPositions(employee.department_id);
       }
     }
   }, [employee, isOpen]);

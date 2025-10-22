@@ -82,6 +82,62 @@ export async function deleteCompany(id: number) {
   try {
     const supabase = await createClient();
 
+    // First, get all departments in this company
+    const { data: departments } = await supabase
+      .from("departments")
+      .select("id")
+      .eq("company_id", id)
+      .is("deleted_at", null);
+
+    if (departments && departments.length > 0) {
+      const departmentIds = departments.map((d) => d.id);
+
+      // Get all positions in these departments
+      const { data: positions } = await supabase
+        .from("positions")
+        .select("id")
+        .in("department_id", departmentIds)
+        .is("deleted_at", null);
+
+      // Delete shifts for all positions
+      if (positions && positions.length > 0) {
+        const positionIds = positions.map((p) => p.id);
+
+        const { error: shiftError } = await supabase
+          .from("work_shifts")
+          .update({ deleted_at: new Date().toISOString() })
+          .in("position_id", positionIds)
+          .is("deleted_at", null);
+
+        if (shiftError) {
+          console.error("Error deleting associated shifts:", shiftError);
+        }
+      }
+
+      // Delete all positions in these departments
+      const { error: positionError } = await supabase
+        .from("positions")
+        .update({ deleted_at: new Date().toISOString() })
+        .in("department_id", departmentIds)
+        .is("deleted_at", null);
+
+      if (positionError) {
+        console.error("Error deleting associated positions:", positionError);
+      }
+
+      // Delete all departments in this company
+      const { error: deptError } = await supabase
+        .from("departments")
+        .update({ deleted_at: new Date().toISOString() })
+        .in("id", departmentIds)
+        .is("deleted_at", null);
+
+      if (deptError) {
+        console.error("Error deleting associated departments:", deptError);
+      }
+    }
+
+    // Finally, soft delete the company itself
     const { error } = await supabase
       .from("companies")
       .update({ deleted_at: new Date().toISOString() })
@@ -92,7 +148,14 @@ export async function deleteCompany(id: number) {
     }
 
     revalidatePath("/dashboard/companies");
-    return { success: true, message: "Perusahaan berhasil dihapus" };
+    revalidatePath("/dashboard/departments");
+    revalidatePath("/dashboard/positions");
+    revalidatePath("/dashboard/shifts");
+    return {
+      success: true,
+      message:
+        "Perusahaan, departemen, posisi, dan shift terkait berhasil dihapus",
+    };
   } catch (error) {
     console.error("Error deleting company:", error);
     return { success: false, error: "Terjadi kesalahan yang tidak terduga" };
@@ -174,6 +237,44 @@ export async function deleteDepartment(id: number) {
   try {
     const supabase = await createClient();
 
+    // First, get all positions in this department to delete their shifts
+    const { data: positions } = await supabase
+      .from("positions")
+      .select("id")
+      .eq("department_id", id)
+      .is("deleted_at", null);
+
+    // Delete shifts for all positions in this department
+    if (positions && positions.length > 0) {
+      const positionIds = positions.map((p) => p.id);
+
+      const { error: shiftError } = await supabase
+        .from("work_shifts")
+        .update({ deleted_at: new Date().toISOString() })
+        .in("position_id", positionIds)
+        .is("deleted_at", null);
+
+      if (shiftError) {
+        console.error("Error deleting associated shifts:", shiftError);
+      }
+    }
+
+    // Then, soft delete all positions in this department
+    const { error: positionError } = await supabase
+      .from("positions")
+      .update({ deleted_at: new Date().toISOString() })
+      .eq("department_id", id)
+      .is("deleted_at", null);
+
+    if (positionError) {
+      console.error("Error deleting associated positions:", positionError);
+      return {
+        success: false,
+        error: "Gagal menghapus posisi yang terkait dengan departemen",
+      };
+    }
+
+    // Finally, soft delete the department itself
     const { error } = await supabase
       .from("departments")
       .update({ deleted_at: new Date().toISOString() })
@@ -184,7 +285,12 @@ export async function deleteDepartment(id: number) {
     }
 
     revalidatePath("/dashboard/departments");
-    return { success: true, message: "Departemen berhasil dihapus" };
+    revalidatePath("/dashboard/positions");
+    revalidatePath("/dashboard/shifts");
+    return {
+      success: true,
+      message: "Departemen, posisi, dan shift terkait berhasil dihapus",
+    };
   } catch (error) {
     console.error("Error deleting department:", error);
     return { success: false, error: "Terjadi kesalahan yang tidak terduga" };
@@ -360,6 +466,22 @@ export async function deletePosition(id: number) {
   try {
     const supabase = await createClient();
 
+    // First, soft delete all work_shifts associated with this position
+    const { error: shiftError } = await supabase
+      .from("work_shifts")
+      .update({ deleted_at: new Date().toISOString() })
+      .eq("position_id", id)
+      .is("deleted_at", null);
+
+    if (shiftError) {
+      console.error("Error deleting associated shifts:", shiftError);
+      return {
+        success: false,
+        error: "Gagal menghapus shift yang terkait dengan posisi",
+      };
+    }
+
+    // Then, soft delete the position itself
     const { error } = await supabase
       .from("positions")
       .update({ deleted_at: new Date().toISOString() })
@@ -370,7 +492,11 @@ export async function deletePosition(id: number) {
     }
 
     revalidatePath("/dashboard/positions");
-    return { success: true, message: "Posisi berhasil dihapus" };
+    revalidatePath("/dashboard/shifts");
+    return {
+      success: true,
+      message: "Posisi dan shift terkait berhasil dihapus",
+    };
   } catch (error) {
     console.error("Error deleting position:", error);
     return { success: false, error: "Terjadi kesalahan yang tidak terduga" };
@@ -454,6 +580,19 @@ export async function deleteWorkShift(id: number) {
   try {
     const supabase = await createClient();
 
+    // First, soft delete all employee_shift_schedules using this shift
+    const { error: scheduleError } = await supabase
+      .from("employee_shift_schedules")
+      .update({ deleted_at: new Date().toISOString() })
+      .eq("shift_id", id)
+      .is("deleted_at", null);
+
+    if (scheduleError) {
+      console.error("Error deleting associated schedules:", scheduleError);
+      // Continue even if this fails, as the table might not exist or be empty
+    }
+
+    // Then, soft delete the work_shift itself
     const { error } = await supabase
       .from("work_shifts")
       .update({ deleted_at: new Date().toISOString() })
@@ -464,7 +603,11 @@ export async function deleteWorkShift(id: number) {
     }
 
     revalidatePath("/dashboard/shifts");
-    return { success: true, message: "Shift kerja berhasil dihapus" };
+    revalidatePath("/dashboard/schedules");
+    return {
+      success: true,
+      message: "Shift kerja dan jadwal terkait berhasil dihapus",
+    };
   } catch (error) {
     console.error("Error deleting work shift:", error);
     return { success: false, error: "Terjadi kesalahan yang tidak terduga" };
