@@ -134,6 +134,7 @@ CREATE TABLE users (
     role_id INT NOT NULL REFERENCES roles(id),
     is_active BOOLEAN NOT NULL DEFAULT TRUE,
     last_login TIMESTAMPTZ,
+    is_password_changed BOOLEAN DEFAULT FALSE,
     created_at TIMESTAMPTZ DEFAULT NOW(),
     deleted_at TIMESTAMPTZ -- Soft Delete
 );

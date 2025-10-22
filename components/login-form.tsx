@@ -15,6 +15,15 @@ import { Label } from "@/components/ui/label";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { getDeviceInfo } from "@/lib/utils/deviceFingerprint";
+import {
+  registerUserDevice,
+  checkUserHasPin,
+} from "@/lib/actions/securityActions";
+import { ChangePasswordDialog } from "@/components/security/ChangePasswordDialog";
+import { SetupPinDialog } from "@/components/security/SetupPinDialog";
+import { VerifyPinDialog } from "@/components/security/VerifyPinDialog";
+import toast from "react-hot-toast";
 
 export function LoginForm({
   className,
@@ -26,6 +35,13 @@ export function LoginForm({
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
 
+  // Dialog states
+  const [showChangePasswordDialog, setShowChangePasswordDialog] =
+    useState(false);
+  const [showSetupPinDialog, setShowSetupPinDialog] = useState(false);
+  const [showVerifyPinDialog, setShowVerifyPinDialog] = useState(false);
+  const [currentUserId, setCurrentUserId] = useState<string>("");
+
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     const supabase = createClient();
@@ -33,19 +49,122 @@ export function LoginForm({
     setError(null);
 
     try {
-      const { error } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      });
-      if (error) throw error;
-      // Redirect ke dashboard setelah login berhasil
-      router.push("/dashboard");
-      router.refresh();
+      // Step 1: Login with email & password
+      const { data: authData, error: authError } =
+        await supabase.auth.signInWithPassword({
+          email,
+          password,
+        });
+
+      if (authError) throw authError;
+      if (!authData.user) throw new Error("User tidak ditemukan");
+
+      const userId = authData.user.id;
+      setCurrentUserId(userId);
+
+      // Step 2: Check if user needs to change password (first time login)
+      const { data: userData } = await supabase
+        .from("users")
+        .select("is_password_changed")
+        .eq("id", userId)
+        .single();
+
+      if (userData && !userData.is_password_changed) {
+        // Show Change Password Dialog untuk user baru
+        setShowChangePasswordDialog(true);
+        setIsLoading(false);
+        return;
+      }
+
+      // Step 3: Auto-register device di background
+      const deviceInfo = getDeviceInfo();
+      const deviceName = `${deviceInfo.browser} on ${deviceInfo.os}`;
+
+      // Check if device already registered
+      const deviceCookie = document.cookie
+        .split("; ")
+        .find((row) => row.startsWith("device_id="));
+
+      if (!deviceCookie) {
+        // Register device
+        const registerResult = await registerUserDevice(
+          userId,
+          deviceInfo.deviceId,
+          deviceName
+        );
+
+        if (registerResult.success) {
+          // Set device cookie
+          document.cookie = `device_id=${
+            deviceInfo.deviceId
+          }; path=/; max-age=${60 * 60 * 24 * 365}`;
+          toast.success("Device berhasil terdaftar");
+        }
+      }
+
+      // Step 4: Check if user has PIN
+      const pinCheck = await checkUserHasPin(userId);
+
+      if (!pinCheck.hasPin) {
+        // Show Setup PIN Dialog
+        setShowSetupPinDialog(true);
+      } else {
+        // Show Verify PIN Dialog
+        setShowVerifyPinDialog(true);
+      }
     } catch (error: unknown) {
       setError(error instanceof Error ? error.message : "An error occurred");
-    } finally {
       setIsLoading(false);
     }
+  };
+
+  const handlePasswordChangeSuccess = async () => {
+    // After password changed, close dialog and continue to device & PIN setup
+    setShowChangePasswordDialog(false);
+
+    try {
+      // Auto-register device di background
+      const deviceInfo = getDeviceInfo();
+      const deviceName = `${deviceInfo.browser} on ${deviceInfo.os}`;
+
+      const registerResult = await registerUserDevice(
+        currentUserId,
+        deviceInfo.deviceId,
+        deviceName
+      );
+
+      if (registerResult.success) {
+        document.cookie = `device_id=${deviceInfo.deviceId}; path=/; max-age=${
+          60 * 60 * 24 * 365
+        }`;
+      }
+
+      // Check if user has PIN
+      const pinCheck = await checkUserHasPin(currentUserId);
+
+      if (!pinCheck.hasPin) {
+        // Show Setup PIN Dialog
+        setTimeout(() => {
+          setShowSetupPinDialog(true);
+        }, 300);
+      } else {
+        // Show Verify PIN Dialog (unlikely for new user, but just in case)
+        setTimeout(() => {
+          setShowVerifyPinDialog(true);
+        }, 300);
+      }
+    } catch (error) {
+      console.error("Error after password change:", error);
+      toast.error("Terjadi kesalahan");
+    }
+  };
+
+  const handlePinSuccess = () => {
+    // Redirect to dashboard after PIN is set/verified
+    setShowSetupPinDialog(false);
+    setShowVerifyPinDialog(false);
+    router.push("/dashboard");
+    router.refresh();
   };
 
   return (
@@ -140,6 +259,33 @@ export function LoginForm({
       <div className="text-center text-sm text-gray-600 dark:text-gray-400">
         <p>© 2025 Bharata Group. All rights reserved.</p>
       </div>
+
+      {/* Change Password Dialog (First Time Login) */}
+      {showChangePasswordDialog && (
+        <ChangePasswordDialog
+          open={showChangePasswordDialog}
+          userId={currentUserId}
+          onSuccess={handlePasswordChangeSuccess}
+        />
+      )}
+
+      {/* Setup PIN Dialog */}
+      {showSetupPinDialog && (
+        <SetupPinDialog
+          open={showSetupPinDialog}
+          userId={currentUserId}
+          onSuccess={handlePinSuccess}
+        />
+      )}
+
+      {/* Verify PIN Dialog */}
+      {showVerifyPinDialog && (
+        <VerifyPinDialog
+          open={showVerifyPinDialog}
+          userId={currentUserId}
+          onSuccess={handlePinSuccess}
+        />
+      )}
     </div>
   );
 }
