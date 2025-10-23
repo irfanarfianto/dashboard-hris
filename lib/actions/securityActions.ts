@@ -5,6 +5,59 @@ import bcrypt from "bcryptjs";
 import { revalidatePath } from "next/cache";
 
 // ============================================================================
+// USER PASSWORD ACTIONS
+// ============================================================================
+
+/**
+ * Check if user needs to change password (by auth_user_id)
+ * Uses auth_user_id from Supabase Auth to query users table directly
+ */
+export async function checkPasswordChanged(authUserId: string) {
+  const supabase = await createClient();
+
+  try {
+    // Query users table by auth_user_id
+    const { data: user, error: userError } = await supabase
+      .from("users")
+      .select("is_password_changed, id")
+      .eq("auth_user_id", authUserId)
+      .is("deleted_at", null)
+      .maybeSingle();
+
+    if (userError) {
+      console.error("Error finding user:", userError);
+      return {
+        needsChange: false,
+        error: "Error finding user",
+      };
+    }
+
+    if (!user) {
+      console.log("User not found for auth_user_id:", authUserId);
+      // No user record = likely not set up yet, skip password change dialog
+      return {
+        needsChange: false,
+        error: "User not found",
+      };
+    }
+
+    return {
+      needsChange: user.is_password_changed === false,
+      is_password_changed: user.is_password_changed,
+      userId: user.id, // Return user id for later use
+    };
+  } catch (error) {
+    console.error("Unexpected error in checkPasswordChanged:", error);
+    return {
+      needsChange: false,
+      error: "Terjadi kesalahan pada server",
+    };
+  }
+}
+
+// ============================================================================
+// USER DEVICE ACTIONS
+// ============================================================================
 // USER DEVICE ACTIONS
 // ============================================================================
 

@@ -16,6 +16,7 @@ import { verifyUserPin } from "@/lib/actions/securityActions";
 import { createClient } from "@/lib/supabase/client";
 import { Loader2, Lock, AlertCircle, LogOut } from "lucide-react";
 import toast from "react-hot-toast";
+import { ChangePasswordDialog } from "@/components/security/ChangePasswordDialog";
 
 const MAX_ATTEMPTS = 3;
 
@@ -26,6 +27,19 @@ export default function VerifyPinPage() {
   const [userId, setUserId] = useState<string | null>(null);
   const [attempts, setAttempts] = useState(0);
   const [isBlocked, setIsBlocked] = useState(false);
+  const [showPasswordDialog, setShowPasswordDialog] = useState(false);
+  const [needsPasswordChange, setNeedsPasswordChange] = useState(false);
+
+  // Debug logging for dialog state changes
+  useEffect(() => {
+    console.log("🔍 Dialog State Changed:");
+    console.log("  - showPasswordDialog:", showPasswordDialog);
+    console.log("  - needsPasswordChange:", needsPasswordChange);
+    console.log(
+      "  - Should Render Dialog:",
+      showPasswordDialog && needsPasswordChange
+    );
+  }, [showPasswordDialog, needsPasswordChange]);
 
   useEffect(() => {
     const getUser = async () => {
@@ -51,6 +65,22 @@ export default function VerifyPinPage() {
     router.push("/sign-in");
   };
 
+  const handlePasswordChangeSuccess = () => {
+    setShowPasswordDialog(false);
+    toast.success("Password berhasil diubah! Mengalihkan ke dashboard...");
+    setTimeout(() => {
+      router.push("/dashboard");
+    }, 1000);
+  };
+
+  const handlePasswordChangeSkip = () => {
+    setShowPasswordDialog(false);
+    toast.success("Mengalihkan ke dashboard...");
+    setTimeout(() => {
+      router.push("/dashboard");
+    }, 500);
+  };
+
   const handleVerify = async () => {
     if (!userId) {
       toast.error("User tidak ditemukan");
@@ -65,17 +95,116 @@ export default function VerifyPinPage() {
     setIsLoading(true);
 
     try {
+      console.log("=".repeat(60));
+      console.log("🔐 VERIFY PIN - DEBUGGING START");
+      console.log("=".repeat(60));
+
       const result = await verifyUserPin(userId, pin);
+      console.log("1️⃣ PIN Verification Result:", result);
 
       if (result.success) {
-        toast.success("PIN benar! Mengalihkan ke dashboard...");
+        toast.success("PIN benar!");
+        console.log("✅ PIN Verified Successfully!");
 
         // Set cookie to mark PIN as verified
         document.cookie = `pin_verified=true; path=/; max-age=${60 * 60 * 24}`; // 24 hours
+        console.log("🍪 Cookie 'pin_verified' set for 24 hours");
 
-        setTimeout(() => {
-          router.push("/dashboard");
-        }, 500);
+        // Check if password needs to be changed
+        console.log("\n2️⃣ Checking Password Change Status...");
+        console.log("Auth User ID:", userId);
+
+        const supabase = createClient();
+        const { data: userData, error: queryError } = await supabase
+          .from("users")
+          .select(
+            "id, is_password_changed, auth_user_id, username, employee_id"
+          )
+          .eq("auth_user_id", userId)
+          .is("deleted_at", null)
+          .maybeSingle();
+
+        console.log("\n3️⃣ Database Query Result:");
+        console.log("Query Error:", queryError);
+        console.log("User Data:", userData);
+
+        if (queryError) {
+          console.error("❌ Error querying users table:", queryError);
+          toast.error("Error checking password status");
+          // Still redirect to dashboard on error
+          setTimeout(() => {
+            router.push("/dashboard");
+          }, 500);
+          return;
+        }
+
+        if (!userData) {
+          console.warn(
+            "⚠️ No user data found in users table for auth_user_id:",
+            userId
+          );
+          console.log("\n🔍 TROUBLESHOOTING:");
+          console.log("1. Check if auth_user_id exists in users table:");
+          console.log(
+            `   SELECT * FROM users WHERE auth_user_id = '${userId}';`
+          );
+          console.log("2. Check if deleted_at is NULL");
+          console.log("3. Run migration to populate auth_user_id if needed");
+
+          // Redirect to dashboard anyway
+          setTimeout(() => {
+            router.push("/dashboard");
+          }, 500);
+          return;
+        }
+
+        console.log("\n4️⃣ User Data Details:");
+        console.log("- User ID (internal):", userData.id);
+        console.log("- Employee ID:", userData.employee_id);
+        console.log("- Username:", userData.username);
+        console.log("- Auth User ID:", userData.auth_user_id);
+        console.log("- is_password_changed:", userData.is_password_changed);
+
+        console.log("\n5️⃣ Password Change Decision:");
+        if (userData.is_password_changed === false) {
+          console.log(
+            "🔑 Password NEEDS to be changed (is_password_changed = false)"
+          );
+          console.log("📋 Setting state to show password dialog...");
+
+          // Show password change dialog
+          setNeedsPasswordChange(true);
+          setShowPasswordDialog(true);
+
+          console.log("✅ State updated:");
+          console.log("   - needsPasswordChange: true");
+          console.log("   - showPasswordDialog: true");
+          console.log("🎭 Password Change Dialog should now appear!");
+        } else if (userData.is_password_changed === true) {
+          console.log(
+            "✅ Password already changed (is_password_changed = true)"
+          );
+          console.log("➡️ Redirecting to dashboard...");
+
+          // Redirect to dashboard
+          setTimeout(() => {
+            router.push("/dashboard");
+          }, 500);
+        } else {
+          console.warn(
+            "⚠️ is_password_changed is neither true nor false:",
+            userData.is_password_changed
+          );
+          console.log("➡️ Redirecting to dashboard as fallback...");
+
+          setTimeout(() => {
+            router.push("/dashboard");
+          }, 500);
+        }
+
+        console.log("\n" + "=".repeat(60));
+        console.log("🔐 VERIFY PIN - DEBUGGING END");
+        console.log("=".repeat(60));
       } else {
         const newAttempts = attempts + 1;
         setAttempts(newAttempts);
@@ -193,6 +322,34 @@ export default function VerifyPinPage() {
           </div>
         </CardContent>
       </Card>
+
+      {/* Password Change Dialog - shows after successful PIN verification if password needs to be changed */}
+      {(() => {
+        const shouldRender = showPasswordDialog && needsPasswordChange;
+        console.log("\n🎭 RENDER CHECK:");
+        console.log("  - showPasswordDialog:", showPasswordDialog);
+        console.log("  - needsPasswordChange:", needsPasswordChange);
+        console.log("  - Should Render:", shouldRender);
+
+        if (shouldRender) {
+          console.log("✅ Rendering ChangePasswordDialog with props:");
+          console.log("  - autoCheck: false");
+          console.log("  - forceOpen: true");
+          console.log("  - onSuccess: defined");
+          console.log("  - onSkip: defined");
+        } else {
+          console.log("❌ NOT Rendering ChangePasswordDialog");
+        }
+
+        return shouldRender ? (
+          <ChangePasswordDialog
+            autoCheck={false}
+            forceOpen={true}
+            onSuccess={handlePasswordChangeSuccess}
+            onSkip={handlePasswordChangeSkip}
+          />
+        ) : null;
+      })()}
     </div>
   );
 }

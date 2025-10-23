@@ -19,7 +19,9 @@ import {
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { formatRupiah } from "@/lib/utils/currency";
-import EditEmployeeDialog from "./EditEmployeeDialog";
+import EditJobDataDialog from "./EditJobDataDialog";
+import EditPersonalDataDialog from "./EditPersonalDataDialog";
+import EditEducationDataDialog from "./EditEducationDataDialog";
 
 interface EducationData {
   id?: number;
@@ -73,7 +75,10 @@ interface EmployeeDetailViewProps {
 export default function EmployeeDetailView({
   employee,
 }: EmployeeDetailViewProps) {
-  const [isEditOpen, setIsEditOpen] = useState(false);
+  // State for each section dialog
+  const [isEditJobOpen, setIsEditJobOpen] = useState(false);
+  const [isEditPersonalOpen, setIsEditPersonalOpen] = useState(false);
+  const [isEditEducationOpen, setIsEditEducationOpen] = useState(false);
 
   const formatDate = (dateString: string) => {
     if (!dateString) return "-";
@@ -110,30 +115,21 @@ export default function EmployeeDetailView({
   return (
     <div className="p-6 space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-4">
-          <Link href="/dashboard/employees">
-            <Button variant="outline" size="sm">
-              <ArrowLeft className="h-4 w-4 mr-2" />
-              Kembali
-            </Button>
-          </Link>
-          <div>
-            <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">
-              {employee.full_name}
-            </h1>
-            <p className="text-gray-600 dark:text-gray-400">
-              {employee.positions?.name} - {employee.departments?.name}
-            </p>
-          </div>
+      <div className="flex items-center gap-4">
+        <Link href="/dashboard/employees">
+          <Button variant="outline" size="sm">
+            <ArrowLeft className="h-4 w-4 mr-2" />
+            Kembali
+          </Button>
+        </Link>
+        <div>
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">
+            {employee.full_name}
+          </h1>
+          <p className="text-gray-600 dark:text-gray-400">
+            {employee.positions?.name} - {employee.departments?.name}
+          </p>
         </div>
-        <Button
-          onClick={() => setIsEditOpen(true)}
-          className="bg-teal-600 hover:bg-teal-700"
-        >
-          <Edit className="h-4 w-4 mr-2" />
-          Edit Data
-        </Button>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -141,10 +137,21 @@ export default function EmployeeDetailView({
         <div className="lg:col-span-2 space-y-6">
           {/* Data Pekerjaan */}
           <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
-            <h2 className="text-xl font-semibold mb-4 flex items-center gap-2 text-gray-900 dark:text-gray-100">
-              <Briefcase className="h-5 w-5 text-teal-600" />
-              Data Pekerjaan
-            </h2>
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-xl font-semibold flex items-center gap-2 text-gray-900 dark:text-gray-100">
+                <Briefcase className="h-5 w-5 text-teal-600" />
+                Data Pekerjaan
+              </h2>
+              <Button
+                onClick={() => setIsEditJobOpen(true)}
+                size="sm"
+                variant="outline"
+                className="text-teal-600 hover:text-teal-700 hover:bg-teal-50 dark:hover:bg-teal-950"
+              >
+                <Edit className="h-4 w-4 mr-2" />
+                Edit
+              </Button>
+            </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label className="text-sm text-gray-600 dark:text-gray-400">
@@ -232,10 +239,21 @@ export default function EmployeeDetailView({
 
           {/* Data Pribadi */}
           <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
-            <h2 className="text-xl font-semibold mb-4 flex items-center gap-2 text-gray-900 dark:text-gray-100">
-              <User className="h-5 w-5 text-blue-600" />
-              Data Pribadi
-            </h2>
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-xl font-semibold flex items-center gap-2 text-gray-900 dark:text-gray-100">
+                <User className="h-5 w-5 text-blue-600" />
+                Data Pribadi
+              </h2>
+              <Button
+                onClick={() => setIsEditPersonalOpen(true)}
+                size="sm"
+                variant="outline"
+                className="text-blue-600 hover:text-blue-700 hover:bg-blue-50 dark:hover:bg-blue-950"
+              >
+                <Edit className="h-4 w-4 mr-2" />
+                Edit
+              </Button>
+            </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label className="text-sm text-gray-600 dark:text-gray-400">
@@ -343,10 +361,21 @@ export default function EmployeeDetailView({
 
           {/* Data Pendidikan */}
           <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
-            <h2 className="text-xl font-semibold mb-4 flex items-center gap-2 text-gray-900 dark:text-gray-100">
-              <GraduationCap className="h-5 w-5 text-purple-600" />
-              Data Pendidikan
-            </h2>
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-xl font-semibold flex items-center gap-2 text-gray-900 dark:text-gray-100">
+                <GraduationCap className="h-5 w-5 text-purple-600" />
+                Data Pendidikan
+              </h2>
+              <Button
+                onClick={() => setIsEditEducationOpen(true)}
+                size="sm"
+                variant="outline"
+                className="text-purple-600 hover:text-purple-700 hover:bg-purple-50 dark:hover:bg-purple-950"
+              >
+                <Edit className="h-4 w-4 mr-2" />
+                Edit
+              </Button>
+            </div>
             {employee.employee_educations &&
             employee.employee_educations.length > 0 ? (
               <div className="space-y-3">
@@ -489,12 +518,32 @@ export default function EmployeeDetailView({
         </div>
       </div>
 
-      {/* Edit Dialog */}
-      <EditEmployeeDialog
-        isOpen={isEditOpen}
-        onClose={() => setIsEditOpen(false)}
-        employee={employee}
-      />
+      {/* Edit Job Data Dialog */}
+      {isEditJobOpen && (
+        <EditJobDataDialog
+          isOpen={isEditJobOpen}
+          onClose={() => setIsEditJobOpen(false)}
+          employee={employee}
+        />
+      )}
+
+      {/* Edit Personal Data Dialog */}
+      {isEditPersonalOpen && (
+        <EditPersonalDataDialog
+          isOpen={isEditPersonalOpen}
+          onClose={() => setIsEditPersonalOpen(false)}
+          employee={employee}
+        />
+      )}
+
+      {/* Edit Education Data Dialog */}
+      {isEditEducationOpen && (
+        <EditEducationDataDialog
+          isOpen={isEditEducationOpen}
+          onClose={() => setIsEditEducationOpen(false)}
+          employee={employee}
+        />
+      )}
     </div>
   );
 }

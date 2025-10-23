@@ -20,7 +20,6 @@ import {
   registerUserDevice,
   checkUserHasPin,
 } from "@/lib/actions/securityActions";
-import { ChangePasswordDialog } from "@/components/security/ChangePasswordDialog";
 import { SetupPinDialog } from "@/components/security/SetupPinDialog";
 import { VerifyPinDialog } from "@/components/security/VerifyPinDialog";
 import toast from "react-hot-toast";
@@ -36,8 +35,6 @@ export function LoginForm({
   const router = useRouter();
 
   // Dialog states
-  const [showChangePasswordDialog, setShowChangePasswordDialog] =
-    useState(false);
   const [showSetupPinDialog, setShowSetupPinDialog] = useState(false);
   const [showVerifyPinDialog, setShowVerifyPinDialog] = useState(false);
   const [currentUserId, setCurrentUserId] = useState<string>("");
@@ -62,21 +59,7 @@ export function LoginForm({
       const userId = authData.user.id;
       setCurrentUserId(userId);
 
-      // Step 2: Check if user needs to change password (first time login)
-      const { data: userData } = await supabase
-        .from("users")
-        .select("is_password_changed")
-        .eq("id", userId)
-        .single();
-
-      if (userData && !userData.is_password_changed) {
-        // Show Change Password Dialog untuk user baru
-        setShowChangePasswordDialog(true);
-        setIsLoading(false);
-        return;
-      }
-
-      // Step 3: Auto-register device di background
+      // Step 2: Auto-register device di background
       const deviceInfo = getDeviceInfo();
       const deviceName = `${deviceInfo.browser} on ${deviceInfo.os}`;
 
@@ -115,47 +98,6 @@ export function LoginForm({
     } catch (error: unknown) {
       setError(error instanceof Error ? error.message : "An error occurred");
       setIsLoading(false);
-    }
-  };
-
-  const handlePasswordChangeSuccess = async () => {
-    // After password changed, close dialog and continue to device & PIN setup
-    setShowChangePasswordDialog(false);
-
-    try {
-      // Auto-register device di background
-      const deviceInfo = getDeviceInfo();
-      const deviceName = `${deviceInfo.browser} on ${deviceInfo.os}`;
-
-      const registerResult = await registerUserDevice(
-        currentUserId,
-        deviceInfo.deviceId,
-        deviceName
-      );
-
-      if (registerResult.success) {
-        document.cookie = `device_id=${deviceInfo.deviceId}; path=/; max-age=${
-          60 * 60 * 24 * 365
-        }`;
-      }
-
-      // Check if user has PIN
-      const pinCheck = await checkUserHasPin(currentUserId);
-
-      if (!pinCheck.hasPin) {
-        // Show Setup PIN Dialog
-        setTimeout(() => {
-          setShowSetupPinDialog(true);
-        }, 300);
-      } else {
-        // Show Verify PIN Dialog (unlikely for new user, but just in case)
-        setTimeout(() => {
-          setShowVerifyPinDialog(true);
-        }, 300);
-      }
-    } catch (error) {
-      console.error("Error after password change:", error);
-      toast.error("Terjadi kesalahan");
     }
   };
 
@@ -259,15 +201,6 @@ export function LoginForm({
       <div className="text-center text-sm text-gray-600 dark:text-gray-400">
         <p>© 2025 Bharata Group. All rights reserved.</p>
       </div>
-
-      {/* Change Password Dialog (First Time Login) */}
-      {showChangePasswordDialog && (
-        <ChangePasswordDialog
-          open={showChangePasswordDialog}
-          userId={currentUserId}
-          onSuccess={handlePasswordChangeSuccess}
-        />
-      )}
 
       {/* Setup PIN Dialog */}
       {showSetupPinDialog && (

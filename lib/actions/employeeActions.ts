@@ -374,7 +374,7 @@ export async function createEmployeeWithUser(data: {
  */
 export async function updateEmployee(
   employeeId: number,
-  data: {
+  data: Partial<{
     // Employee data
     company_id: number;
     department_id: number;
@@ -386,11 +386,11 @@ export async function updateEmployee(
     birth_date: string;
     hire_date: string;
     // Contract data
-    contract_type?: "Probation" | "Contract" | "Permanent";
-    salary_base?: number;
-    contract_end_date?: string;
+    contract_type: "Probation" | "Contract" | "Permanent";
+    salary_base: number;
+    contract_end_date: string;
     // Personnel details
-    personnel_details?: {
+    personnel_details: {
       religion: string;
       marital_status: string;
       ptkp_status: string;
@@ -398,29 +398,42 @@ export async function updateEmployee(
       domicile_address: string;
       npwp_number?: string;
     };
-  }
+  }>
 ) {
   try {
     const supabase = await createClient();
 
+    // Prepare employee data (only fields that are provided)
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const employeeData: any = {
+      updated_at: new Date().toISOString(),
+    };
+
+    if (data.company_id !== undefined)
+      employeeData.company_id = data.company_id;
+    if (data.department_id !== undefined)
+      employeeData.department_id = data.department_id;
+    if (data.position_id !== undefined)
+      employeeData.position_id = data.position_id;
+    if (data.full_name !== undefined) employeeData.full_name = data.full_name;
+    if (data.phone_number !== undefined)
+      employeeData.phone_number = data.phone_number;
+    if (data.email !== undefined) employeeData.email = data.email;
+    if (data.gender !== undefined) employeeData.gender = data.gender;
+    if (data.birth_date !== undefined)
+      employeeData.birth_date = data.birth_date;
+    if (data.hire_date !== undefined) employeeData.hire_date = data.hire_date;
+    if (data.contract_type !== undefined)
+      employeeData.contract_type = data.contract_type;
+    if (data.salary_base !== undefined)
+      employeeData.salary_base = data.salary_base;
+    if (data.contract_end_date !== undefined)
+      employeeData.contract_end_date = data.contract_end_date;
+
     // 1. Update employee data
     const { error: employeeError } = await supabase
       .from("employees")
-      .update({
-        company_id: data.company_id,
-        department_id: data.department_id,
-        position_id: data.position_id,
-        full_name: data.full_name,
-        phone_number: data.phone_number,
-        email: data.email,
-        gender: data.gender,
-        birth_date: data.birth_date,
-        hire_date: data.hire_date,
-        contract_type: data.contract_type,
-        salary_base: data.salary_base,
-        contract_end_date: data.contract_end_date,
-        updated_at: new Date().toISOString(),
-      })
+      .update(employeeData)
       .eq("id", employeeId);
 
     if (employeeError) {
@@ -713,6 +726,117 @@ export async function deleteEmployeeEducation(id: number) {
     return { success: true, message: "Data pendidikan berhasil dihapus" };
   } catch (error) {
     console.error("Error deleting employee education:", error);
+    return { success: false, error: "Terjadi kesalahan yang tidak terduga" };
+  }
+}
+
+/**
+ * Update employee personnel details
+ */
+export async function updateEmployeePersonnelDetails(
+  employeeId: number,
+  data: {
+    religion: string;
+    marital_status: string;
+    ptkp_status: string;
+    ktp_address: string;
+    domicile_address: string;
+    npwp_number?: string;
+  }
+) {
+  try {
+    const supabase = await createClient();
+
+    // Check if personnel details exist
+    const { data: existingDetails } = await supabase
+      .from("employee_personnel_details")
+      .select("id")
+      .eq("employee_id", employeeId)
+      .maybeSingle();
+
+    if (existingDetails) {
+      // Update existing
+      const { error } = await supabase
+        .from("employee_personnel_details")
+        .update({
+          ...data,
+          updated_at: new Date().toISOString(),
+        })
+        .eq("employee_id", employeeId);
+
+      if (error) {
+        return { success: false, error: error.message };
+      }
+    } else {
+      // Create new
+      const { error } = await supabase
+        .from("employee_personnel_details")
+        .insert({
+          employee_id: employeeId,
+          ...data,
+        });
+
+      if (error) {
+        return { success: false, error: error.message };
+      }
+    }
+
+    revalidatePath("/dashboard/employees");
+    return { success: true, message: "Data pribadi berhasil diperbarui" };
+  } catch (error) {
+    console.error("Error updating personnel details:", error);
+    return { success: false, error: "Terjadi kesalahan yang tidak terduga" };
+  }
+}
+
+/**
+ * Update multiple employee educations (for dialog edit)
+ */
+export async function updateEmployeeEducations(
+  employeeId: number,
+  educations: Array<{
+    id?: number;
+    degree: string;
+    institution: string;
+    major: string;
+    graduation_year: string;
+  }>
+) {
+  try {
+    const supabase = await createClient();
+
+    // First, soft delete all existing educations for this employee
+    const { error: deleteError } = await supabase
+      .from("employee_educations")
+      .update({ deleted_at: new Date().toISOString() })
+      .eq("employee_id", employeeId)
+      .is("deleted_at", null);
+
+    if (deleteError) {
+      return { success: false, error: deleteError.message };
+    }
+
+    // Then insert new educations
+    const educationsToInsert = educations.map((edu) => ({
+      employee_id: employeeId,
+      degree: edu.degree,
+      institution: edu.institution,
+      major: edu.major,
+      graduation_year: parseInt(edu.graduation_year),
+    }));
+
+    const { error: insertError } = await supabase
+      .from("employee_educations")
+      .insert(educationsToInsert);
+
+    if (insertError) {
+      return { success: false, error: insertError.message };
+    }
+
+    revalidatePath("/dashboard/employees");
+    return { success: true, message: "Data pendidikan berhasil diperbarui" };
+  } catch (error) {
+    console.error("Error updating employee educations:", error);
     return { success: false, error: "Terjadi kesalahan yang tidak terduga" };
   }
 }

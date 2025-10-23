@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import toast from "react-hot-toast";
 import {
   Loader2,
@@ -24,21 +24,158 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { createClient } from "@/lib/supabase/client";
 
 interface ChangePasswordDialogProps {
-  open: boolean;
-  userId: string;
   onSuccess?: () => void;
+  onSkip?: () => void;
+  autoCheck?: boolean; // New prop: if true, auto-fetch data; if false, controlled by parent
+  forceOpen?: boolean; // New prop: force dialog to open (controlled mode)
 }
 
 export function ChangePasswordDialog({
-  open,
-  userId,
   onSuccess,
+  onSkip,
+  autoCheck = true, // Default to auto mode
+  forceOpen = false,
 }: ChangePasswordDialogProps) {
+  const [open, setOpen] = useState(false);
+  const [userId, setUserId] = useState<string | null>(null);
+  const [isCheckingPassword, setIsCheckingPassword] = useState(true);
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+
+  // Debug: Log props on mount
+  useEffect(() => {
+    console.log("\n" + "=".repeat(60));
+    console.log("🎨 ChangePasswordDialog MOUNTED");
+    console.log("=".repeat(60));
+    console.log("Props received:");
+    console.log("  - autoCheck:", autoCheck);
+    console.log("  - forceOpen:", forceOpen);
+    console.log("  - onSuccess:", typeof onSuccess);
+    console.log("  - onSkip:", typeof onSkip);
+    console.log("=".repeat(60));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Debug: Log state changes
+  useEffect(() => {
+    console.log("🔄 ChangePasswordDialog State:");
+    console.log("  - open:", open);
+    console.log("  - userId:", userId);
+    console.log("  - isCheckingPassword:", isCheckingPassword);
+  }, [open, userId, isCheckingPassword]);
+
+  // Fetch data sendiri dan cek is_password_changed (only in auto mode)
+  useEffect(() => {
+    // If controlled mode, don't auto-fetch
+    if (!autoCheck) {
+      setIsCheckingPassword(false);
+      return;
+    }
+
+    const checkPasswordStatus = async () => {
+      try {
+        const supabase = createClient();
+
+        // 1. Get current authenticated user
+        const {
+          data: { user },
+        } = await supabase.auth.getUser();
+
+        if (!user) {
+          console.log("No authenticated user found");
+          setIsCheckingPassword(false);
+          return;
+        }
+
+        console.log("Auth user ID:", user.id);
+
+        // 2. Query users table by auth_user_id
+        const { data: userData, error } = await supabase
+          .from("users")
+          .select("id, is_password_changed, auth_user_id")
+          .eq("auth_user_id", user.id)
+          .is("deleted_at", null)
+          .maybeSingle();
+
+        if (error) {
+          console.error("Error checking password status:", error);
+          setIsCheckingPassword(false);
+          return;
+        }
+
+        if (!userData) {
+          console.log(
+            "User data not found in users table for auth_user_id:",
+            user.id
+          );
+          setIsCheckingPassword(false);
+          return;
+        }
+
+        console.log("User data found:", {
+          userId: userData.id,
+          authUserId: userData.auth_user_id,
+          isPasswordChanged: userData.is_password_changed,
+        });
+
+        // 3. Jika is_password_changed = false, tampilkan dialog
+        if (userData.is_password_changed === false) {
+          console.log("Password needs to be changed - showing dialog");
+          setUserId(user.id); // Store auth user id
+          setOpen(true); // Show dialog
+        } else {
+          console.log("Password already changed - no dialog needed");
+        }
+      } catch (error) {
+        console.error("Error in checkPasswordStatus:", error);
+      } finally {
+        setIsCheckingPassword(false);
+      }
+    };
+
+    checkPasswordStatus();
+  }, [autoCheck]);
+
+  // Handle controlled mode
+  useEffect(() => {
+    console.log("\n🎮 Controlled Mode Check:");
+    console.log("  - autoCheck:", autoCheck);
+    console.log("  - forceOpen:", forceOpen);
+    console.log(
+      "  - Should activate controlled mode:",
+      !autoCheck && forceOpen
+    );
+
+    if (!autoCheck && forceOpen) {
+      console.log("✅ Activating controlled mode...");
+
+      // In controlled mode, get user ID and open dialog
+      const getUserId = async () => {
+        console.log("🔍 Fetching authenticated user...");
+        const supabase = createClient();
+        const {
+          data: { user },
+        } = await supabase.auth.getUser();
+
+        console.log("User fetched:", user?.id);
+
+        if (user) {
+          console.log("✅ Setting userId and opening dialog...");
+          setUserId(user.id);
+          setOpen(true);
+          console.log("✅ Dialog should now be open!");
+        } else {
+          console.error("❌ No authenticated user found!");
+        }
+      };
+      getUserId();
+    } else {
+      console.log("⏭️ Skipping controlled mode");
+    }
+  }, [autoCheck, forceOpen]);
 
   const validatePassword = (password: string) => {
     const minLength = password.length >= 8;
@@ -87,15 +224,21 @@ export function ChangePasswordDialog({
 
       if (authError) throw authError;
 
-      // 2. Update flag di tabel users
-      const { error: updateError } = await supabase
-        .from("users")
-        .update({ is_password_changed: true })
-        .eq("id", userId);
+      // 2. Update flag di tabel users (by auth_user_id)
+      if (userId) {
+        const { error: updateError } = await supabase
+          .from("users")
+          .update({ is_password_changed: true })
+          .eq("auth_user_id", userId);
 
-      if (updateError) throw updateError;
+        if (updateError) {
+          console.error("Error updating users table:", updateError);
+          // Don't throw - password already changed in Auth
+        }
+      }
 
       toast.success("Password berhasil diubah!");
+      setOpen(false);
 
       // 3. Call onSuccess callback
       if (onSuccess) {
@@ -113,29 +256,67 @@ export function ChangePasswordDialog({
     }
   };
 
+  const handleSkip = () => {
+    toast("Anda dapat mengganti password kapan saja di menu Settings", {
+      icon: "ℹ️",
+      duration: 4000,
+    });
+    setOpen(false);
+    if (onSkip) {
+      onSkip();
+    }
+  };
+
+  // Don't render anything while checking
+  if (isCheckingPassword) {
+    console.log(
+      "⏳ ChangePasswordDialog: Still checking password status, not rendering..."
+    );
+    return null;
+  }
+
+  // Don't render if dialog shouldn't be shown
+  if (!open) {
+    console.log(
+      "❌ ChangePasswordDialog: Dialog is closed (open = false), not rendering..."
+    );
+    return null;
+  }
+
+  console.log("\n" + "=".repeat(60));
+  console.log("✅ ChangePasswordDialog: RENDERING DIALOG!");
+  console.log("=".repeat(60));
+  console.log("State:");
+  console.log("  - open:", open);
+  console.log("  - userId:", userId);
+  console.log("  - isCheckingPassword:", isCheckingPassword);
+  console.log("=".repeat(60));
+
   return (
-    <Dialog open={open} onOpenChange={() => {}}>
+    <Dialog open={open} onOpenChange={(newOpen) => !newOpen && handleSkip()}>
       <DialogContent
         className="sm:max-w-md backdrop-blur-sm bg-background/95"
-        onInteractOutside={(e) => e.preventDefault()}
-        onEscapeKeyDown={(e) => e.preventDefault()}
+        onInteractOutside={handleSkip}
+        onEscapeKeyDown={handleSkip}
       >
         <DialogHeader>
           <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-amber-100 dark:bg-amber-900/50">
             <Lock className="h-6 w-6 text-amber-600 dark:text-amber-400" />
           </div>
-          <DialogTitle className="text-center">Ganti Password</DialogTitle>
+          <DialogTitle className="text-center">
+            Rekomendasi Ganti Password
+          </DialogTitle>
           <DialogDescription className="text-center">
-            Untuk keamanan akun, silakan ganti password default Anda
+            Untuk keamanan akun, kami merekomendasikan Anda mengganti password
           </DialogDescription>
         </DialogHeader>
 
         <div className="space-y-4 py-4">
-          <Alert className="border-amber-200 bg-amber-50 dark:border-amber-800 dark:bg-amber-950/20">
-            <AlertCircle className="h-4 w-4 text-amber-600 dark:text-amber-400" />
-            <AlertDescription className="text-xs text-amber-800 dark:text-amber-200">
-              Ini adalah login pertama Anda. Harap ganti password sebelum
-              melanjutkan.
+          <Alert className="border-blue-200 bg-blue-50 dark:border-blue-800 dark:bg-blue-950/20">
+            <AlertCircle className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+            <AlertDescription className="text-xs text-blue-800 dark:text-blue-200">
+              Untuk keamanan maksimal, kami sarankan Anda mengganti password
+              secara berkala. Anda dapat melewati langkah ini.
             </AlertDescription>
           </Alert>
 
@@ -219,25 +400,36 @@ export function ChangePasswordDialog({
             )}
           </div>
 
-          <Button
-            onClick={handleChangePassword}
-            disabled={
-              isLoading ||
-              !passwordStrength.isValid ||
-              newPassword !== confirmPassword
-            }
-            className="w-full"
-            size="lg"
-          >
-            {isLoading ? (
-              <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Memproses...
-              </>
-            ) : (
-              "Ubah Password"
-            )}
-          </Button>
+          <div className="flex gap-2">
+            <Button
+              onClick={handleSkip}
+              disabled={isLoading}
+              variant="outline"
+              className="flex-1"
+              size="lg"
+            >
+              Nanti Saja
+            </Button>
+            <Button
+              onClick={handleChangePassword}
+              disabled={
+                isLoading ||
+                !passwordStrength.isValid ||
+                newPassword !== confirmPassword
+              }
+              className="flex-1 flex items-center gap-2 bg-gradient-to-r from-teal-500 to-teal-600 hover:from-teal-600 hover:to-teal-700"
+              size="lg"
+            >
+              {isLoading ? (
+                <>
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  Memproses...
+                </>
+              ) : (
+                "Ubah Password"
+              )}
+            </Button>
+          </div>
         </div>
       </DialogContent>
     </Dialog>

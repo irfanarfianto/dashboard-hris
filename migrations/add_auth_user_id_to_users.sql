@@ -28,3 +28,26 @@ ALTER COLUMN password_hash DROP NOT NULL;
 COMMENT ON COLUMN users.auth_user_id IS 'Reference to Supabase auth.users - handles actual authentication';
 COMMENT ON COLUMN users.employee_id IS 'Reference to employees - nullable for admin/HR users';
 COMMENT ON COLUMN users.password_hash IS 'Optional - can be removed if using full Supabase Auth';
+
+-- 7. Enable RLS on users table
+ALTER TABLE users ENABLE ROW LEVEL SECURITY;
+
+-- 8. Create RLS policy for authenticated users to read users table
+-- This allows checkPasswordChanged() to work during login
+DROP POLICY IF EXISTS users_select_own ON users;
+DROP POLICY IF EXISTS users_authenticated_read ON users;
+CREATE POLICY users_authenticated_read
+ON users
+FOR SELECT
+TO authenticated
+USING (true);  -- Allow all authenticated users to read
+
+-- 9. Create RLS policy for service role (full access via server actions)
+-- Service role bypasses RLS by default, but we define it explicitly
+DROP POLICY IF EXISTS users_service_role_all ON users;
+CREATE POLICY users_service_role_all
+ON users
+FOR ALL
+TO service_role
+USING (true)
+WITH CHECK (true);
