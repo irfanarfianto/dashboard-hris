@@ -1,79 +1,179 @@
-import { Clock, MapPin, Users, Calendar } from "lucide-react";
+import { createClient } from "@/lib/supabase/server";
+import { redirect } from "next/navigation";
+import CheckInOutCard from "@/components/attendance/CheckInOutCard";
+import RealTimeAttendanceDashboard from "@/components/attendance/RealTimeAttendanceDashboard";
+import AttendanceReportGenerator from "@/components/attendance/AttendanceReportGenerator";
+import OvertimeManagement from "@/components/attendance/OvertimeManagement";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Clock, Users, FileText, TrendingUp, AlertCircle } from "lucide-react";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+  hasPermission,
+  requireAnyPermission,
+  PERMISSIONS,
+} from "@/lib/permissions";
 
-export default function AttendancePage() {
+export default async function AttendancePage() {
+  const supabase = await createClient();
+
+  // Get current user
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    redirect("/sign-in");
+  }
+
+  // Require at least one attendance permission
+  await requireAnyPermission(
+    [
+      PERMISSIONS.ATTENDANCE_CHECK_IN,
+      PERMISSIONS.ATTENDANCE_VIEW_OWN,
+      PERMISSIONS.ATTENDANCE_VIEW_TEAM,
+      PERMISSIONS.ATTENDANCE_VIEW_ALL,
+    ],
+    {
+      redirectTo: "/dashboard",
+      errorMessage: "You don't have access to attendance module",
+    }
+  );
+
+  // Get user to find employee_id
+  const { data: userRecord } = await supabase
+    .from("users")
+    .select("employee_id")
+    .eq("auth_user_id", user.id)
+    .is("deleted_at", null)
+    .single();
+
+  if (!userRecord?.employee_id) {
+    redirect("/dashboard");
+  }
+
+  // Get employee info with company and role
+  const { data: employee, error } = await supabase
+    .from("employees")
+    .select(
+      `
+      id,
+      full_name,
+      company_id,
+      position:positions(name),
+      department:departments(name)
+    `
+    )
+    .eq("id", userRecord.employee_id)
+    .is("deleted_at", null)
+    .single();
+
+  if (error || !employee) {
+    return (
+      <div className="container mx-auto p-6">
+        <Alert variant="destructive">
+          <AlertCircle className="h-4 w-4" />
+          <AlertTitle>Error</AlertTitle>
+          <AlertDescription>
+            Data karyawan tidak ditemukan. Silakan hubungi administrator.
+          </AlertDescription>
+        </Alert>
+      </div>
+    );
+  }
+
+  // Check user permissions (granular permission-based access)
+  const canCheckIn = await hasPermission(PERMISSIONS.ATTENDANCE_CHECK_IN);
+  const canViewTeam = await hasPermission(PERMISSIONS.ATTENDANCE_VIEW_TEAM);
+  const canViewAll = await hasPermission(PERMISSIONS.ATTENDANCE_VIEW_ALL);
+  const canApprove = await hasPermission(PERMISSIONS.ATTENDANCE_APPROVE);
+  const canExport = await hasPermission(PERMISSIONS.ATTENDANCE_EXPORT);
+
+  // Combined permissions for tabs
+  const canViewMonitoring = canViewTeam || canViewAll; // Manager, HR Admin, Super Admin
+  const canGenerateReports = canViewTeam || canViewAll || canExport; // Manager+
+  const canManageOvertime = canApprove || canViewAll; // Manager+ (approve overtime)
+
   return (
-    <div className="space-y-6">
+    <div className="container mx-auto p-6 space-y-6">
       {/* Header */}
       <div>
-        <h1 className="text-3xl font-bold tracking-tight">Presensi</h1>
+        <h1 className="text-3xl font-bold mb-2">Modul Presensi</h1>
         <p className="text-muted-foreground">
-          Manajemen presensi dan absensi karyawan
+          Kelola presensi, lembur, dan laporan karyawan
         </p>
       </div>
 
-      {/* Coming Soon Section */}
-      <Card className="border-dashed">
-        <CardHeader className="text-center pb-4">
-          <div className="mx-auto mb-4 flex h-20 w-20 items-center justify-center rounded-full bg-gradient-to-br from-teal-500 to-lime-500">
-            <Clock className="h-10 w-10 text-white" />
-          </div>
-          <CardTitle className="text-2xl">Fitur Dalam Pengembangan</CardTitle>
-          <CardDescription className="text-base">
-            Modul presensi sedang dikembangkan dan akan segera hadir
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="grid gap-4 md:grid-cols-2">
-            <div className="flex gap-3 rounded-lg border p-4">
-              <MapPin className="h-5 w-5 text-teal-600 mt-0.5" />
-              <div>
-                <h4 className="font-semibold text-sm mb-1">Geofencing</h4>
-                <p className="text-xs text-muted-foreground">
-                  Absensi berdasarkan lokasi GPS & WiFi
-                </p>
-              </div>
-            </div>
-            <div className="flex gap-3 rounded-lg border p-4">
-              <Users className="h-5 w-5 text-teal-600 mt-0.5" />
-              <div>
-                <h4 className="font-semibold text-sm mb-1">
-                  Real-time Tracking
-                </h4>
-                <p className="text-xs text-muted-foreground">
-                  Monitor kehadiran karyawan secara real-time
-                </p>
-              </div>
-            </div>
-            <div className="flex gap-3 rounded-lg border p-4">
-              <Calendar className="h-5 w-5 text-teal-600 mt-0.5" />
-              <div>
-                <h4 className="font-semibold text-sm mb-1">Laporan Absensi</h4>
-                <p className="text-xs text-muted-foreground">
-                  Rekap harian, mingguan, dan bulanan
-                </p>
-              </div>
-            </div>
-            <div className="flex gap-3 rounded-lg border p-4">
-              <Clock className="h-5 w-5 text-teal-600 mt-0.5" />
-              <div>
-                <h4 className="font-semibold text-sm mb-1">
-                  Overtime Tracking
-                </h4>
-                <p className="text-xs text-muted-foreground">
-                  Pencatatan lembur otomatis
-                </p>
-              </div>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
+      {/* Tabs Navigation */}
+      <Tabs defaultValue="checkin" className="w-full">
+        <TabsList className="grid w-full grid-cols-4">
+          <TabsTrigger value="checkin" className="flex items-center gap-2">
+            <Clock className="h-4 w-4" />
+            <span className="hidden sm:inline">Check In/Out</span>
+          </TabsTrigger>
+          <TabsTrigger value="monitoring" className="flex items-center gap-2">
+            <Users className="h-4 w-4" />
+            <span className="hidden sm:inline">Monitoring</span>
+          </TabsTrigger>
+          <TabsTrigger value="reports" className="flex items-center gap-2">
+            <FileText className="h-4 w-4" />
+            <span className="hidden sm:inline">Laporan</span>
+          </TabsTrigger>
+          <TabsTrigger value="overtime" className="flex items-center gap-2">
+            <TrendingUp className="h-4 w-4" />
+            <span className="hidden sm:inline">Lembur</span>
+          </TabsTrigger>
+        </TabsList>
+
+        {/* Check In/Out Tab */}
+        <TabsContent value="checkin" className="space-y-4">
+          <CheckInOutCard
+            employeeId={employee.id}
+            employeeName={employee.full_name}
+          />
+        </TabsContent>
+
+        {/* Monitoring Tab - Manager, HR Admin, Super Admin */}
+        <TabsContent value="monitoring" className="space-y-4">
+          {canViewMonitoring ? (
+            <RealTimeAttendanceDashboard companyId={employee.company_id} />
+          ) : (
+            <Alert>
+              <AlertCircle className="h-4 w-4" />
+              <AlertTitle>Akses Terbatas</AlertTitle>
+              <AlertDescription>
+                Fitur monitoring real-time hanya tersedia untuk Manager, HR
+                Admin, dan Super Admin. Anda dapat melihat presensi pribadi Anda
+                di tab &quot;Check In/Out&quot;.
+              </AlertDescription>
+            </Alert>
+          )}
+        </TabsContent>
+
+        {/* Reports Tab - Manager, HR Admin, Super Admin */}
+        <TabsContent value="reports" className="space-y-4">
+          {canGenerateReports ? (
+            <AttendanceReportGenerator companyId={employee.company_id} />
+          ) : (
+            <Alert>
+              <AlertCircle className="h-4 w-4" />
+              <AlertTitle>Akses Terbatas</AlertTitle>
+              <AlertDescription>
+                Fitur generate laporan hanya tersedia untuk Manager, HR Admin,
+                dan Super Admin. Untuk melihat riwayat presensi Anda, silakan
+                hubungi administrator.
+              </AlertDescription>
+            </Alert>
+          )}
+        </TabsContent>
+
+        {/* Overtime Tab - All Users, but different views */}
+        <TabsContent value="overtime" className="space-y-4">
+          <OvertimeManagement
+            isAdmin={canManageOvertime}
+            currentUserId={employee.id}
+          />
+        </TabsContent>
+      </Tabs>
     </div>
   );
 }

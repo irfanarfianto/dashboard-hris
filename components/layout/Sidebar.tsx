@@ -30,19 +30,45 @@ interface SidebarProps {
   className?: string;
   isOpen?: boolean;
   onClose?: () => void;
+  userRole?: string; // Role user: "Employee" | "Manager" | "HR Admin" | "Super Admin"
 }
 
-const navigationItems = [
+// Role-based access configuration
+type RoleType = "Employee" | "Manager" | "HR Admin" | "Super Admin";
+
+interface NavigationItem {
+  title: string;
+  href?: string;
+  icon: React.ComponentType<{ className?: string }>;
+  description: string;
+  submenu?: Array<{
+    title: string;
+    href: string;
+    icon: React.ComponentType<{ className?: string }>;
+  }>;
+  allowedRoles?: RoleType[]; // Jika tidak ada, berarti semua role bisa akses
+}
+
+const navigationItems: NavigationItem[] = [
   {
     title: "Dashboard",
     href: "/dashboard",
     icon: LayoutDashboard,
     description: "Ringkasan & Statistik",
+    // Semua role bisa akses dashboard
+  },
+  {
+    title: "Profil Saya",
+    href: "/dashboard/profile",
+    icon: Users,
+    description: "Data Pribadi & Informasi Akun",
+    // Semua role bisa akses profil sendiri
   },
   {
     title: "Manajemen SDM",
     icon: Users,
     description: "Data Karyawan & Struktur Organisasi",
+    allowedRoles: ["HR Admin", "Super Admin"], // Hanya HR Admin & Super Admin
     submenu: [
       {
         title: "Karyawan",
@@ -75,6 +101,7 @@ const navigationItems = [
     title: "Presensi & Shift",
     icon: Clock,
     description: "Manajemen Presensi & Jadwal Kerja",
+    // Semua role bisa akses (employee lihat sendiri, manager lihat tim, hr/admin lihat semua)
     submenu: [
       {
         title: "Presensi",
@@ -98,17 +125,20 @@ const navigationItems = [
     href: "/dashboard/leaves",
     icon: Calendar,
     description: "Manajemen Cuti & Persetujuan",
+    // Semua role bisa akses (employee untuk ajukan, manager untuk approve)
   },
   {
     title: "Penggajian",
     href: "/dashboard/payroll",
     icon: Wallet,
     description: "Payroll & Komponen Gaji",
+    allowedRoles: ["HR Admin", "Super Admin"], // Hanya HR & Super Admin
   },
   {
     title: "Dokumentasi Dev",
     icon: BookOpen,
     description: "Panduan Developer & Dokumentasi",
+    allowedRoles: ["Super Admin"], // Hanya Super Admin
     submenu: [
       {
         title: "Index Docs",
@@ -141,6 +171,7 @@ const navigationItems = [
     title: "Sistem",
     icon: Settings,
     description: "Pengaturan & Keamanan Sistem",
+    allowedRoles: ["HR Admin", "Super Admin"], // Hanya HR & Super Admin
     submenu: [
       {
         title: "Role & Akses",
@@ -166,13 +197,35 @@ const navigationItems = [
   },
 ];
 
+// Filter navigation items based on user role
+function filterNavigationByRole(
+  items: NavigationItem[],
+  userRole?: string
+): NavigationItem[] {
+  if (!userRole) return items; // If no role, show all (fallback)
+
+  return items.filter((item) => {
+    // If no allowedRoles defined, item is accessible to all
+    if (!item.allowedRoles || item.allowedRoles.length === 0) {
+      return true;
+    }
+
+    // Check if user's role is in allowedRoles
+    return item.allowedRoles.includes(userRole as RoleType);
+  });
+}
+
 export default function Sidebar({
   className,
   isOpen = true,
   onClose,
+  userRole,
 }: SidebarProps) {
   const pathname = usePathname();
   const [openSubmenu, setOpenSubmenu] = useState<string | null>(null);
+
+  // Filter navigation based on role
+  const filteredNavigation = filterNavigationByRole(navigationItems, userRole);
 
   const handleLinkClick = () => {
     // Close mobile menu when clicking a link
@@ -231,7 +284,7 @@ export default function Sidebar({
         {/* Navigation */}
         <nav className="flex-1 overflow-y-auto px-3 py-4">
           <ul className="space-y-1">
-            {navigationItems.map((item, index) => {
+            {filteredNavigation.map((item, index) => {
               const Icon = item.icon;
               const hasSubmenu = "submenu" in item && item.submenu;
               const isSubmenuOpen = openSubmenu === item.title;
@@ -355,6 +408,19 @@ export default function Sidebar({
 
         {/* Footer Info */}
         <div className="border-t p-4 space-y-3">
+          {/* User Role Badge */}
+          {userRole && (
+            <div className="rounded-lg bg-gradient-to-r from-teal-500 to-lime-500 p-3 text-white">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-xs font-medium opacity-90">Your Role</p>
+                  <p className="text-sm font-bold">{userRole}</p>
+                </div>
+                <Shield className="h-5 w-5 opacity-80" />
+              </div>
+            </div>
+          )}
+
           {/* Theme Switcher for Mobile */}
           <div className="flex items-center justify-between rounded-lg bg-gradient-to-r from-teal-50 to-lime-50 p-2 dark:from-teal-900/20 dark:to-lime-900/20 border border-teal-200 dark:border-teal-800">
             <span className="text-xs font-medium text-teal-900 dark:text-teal-100">
@@ -369,7 +435,13 @@ export default function Sidebar({
               💡 Tips
             </p>
             <p className="mt-1 text-xs text-teal-700 dark:text-teal-300">
-              Gunakan sidebar untuk navigasi cepat antar modul.
+              {userRole === "Employee"
+                ? "Gunakan menu Presensi untuk check-in/out."
+                : userRole === "Manager"
+                ? "Lihat data tim Anda di menu Presensi."
+                : userRole === "HR Admin"
+                ? "Kelola semua data karyawan melalui Manajemen SDM."
+                : "Anda memiliki akses penuh ke seluruh sistem."}
             </p>
           </div>
         </div>

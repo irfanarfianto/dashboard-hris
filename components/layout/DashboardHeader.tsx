@@ -13,6 +13,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Badge } from "@/components/ui/badge";
+import Link from "next/link";
 
 interface DashboardHeaderProps {
   userEmail?: string;
@@ -94,17 +95,32 @@ export default function DashboardHeader({
               </div>
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
-            <DropdownMenuItem className="cursor-pointer">
-              <User className="mr-2 h-4 w-4" />
-              Profil Saya
+            <DropdownMenuItem asChild>
+              <Link
+                href="/dashboard/profile"
+                className="cursor-pointer flex items-center"
+              >
+                <User className="mr-2 h-4 w-4" />
+                Profil Saya
+              </Link>
             </DropdownMenuItem>
-            <DropdownMenuItem className="cursor-pointer">
-              <Bell className="mr-2 h-4 w-4" />
-              Notifikasi
+            <DropdownMenuItem asChild>
+              <Link
+                href="/dashboard/notifications"
+                className="cursor-pointer flex items-center"
+              >
+                <Bell className="mr-2 h-4 w-4" />
+                Notifikasi
+              </Link>
             </DropdownMenuItem>
-            <DropdownMenuItem className="cursor-pointer">
-              <Settings className="mr-2 h-4 w-4" />
-              Pengaturan
+            <DropdownMenuItem asChild>
+              <Link
+                href="/dashboard/settings"
+                className="cursor-pointer flex items-center"
+              >
+                <Settings className="mr-2 h-4 w-4" />
+                Pengaturan
+              </Link>
             </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem asChild>
